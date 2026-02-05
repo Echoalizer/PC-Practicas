@@ -1,0 +1,30 @@
+package model;
+
+public class Hilo extends Thread {
+	/*  id
+	 *  1 -> Aumentar
+	 *  0 -> Disminuir
+	 */
+	
+	private int _id;
+	public Entero _num;
+	
+	public Hilo(int id, int time) {
+	
+	}
+	
+	
+	@Override
+	public void run() {
+		System.out.println("El id es " + _id + " y su tiempo es " + _time);
+		
+		try {
+			Thread.sleep(_time);
+			System.out.println(_id);
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+	}
+}

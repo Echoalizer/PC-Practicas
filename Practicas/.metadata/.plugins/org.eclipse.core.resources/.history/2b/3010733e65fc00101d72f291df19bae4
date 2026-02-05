@@ -1,0 +1,12 @@
+package launcher;
+
+import java.util.Scanner;
+
+public class Main {
+
+	public static void (String[] args) {
+		Scanner scan = new Scanner(System.in);
+		int n;
+		
+	}
+}

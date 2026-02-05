@@ -1,0 +1,11 @@
+package model;
+
+public class Hilo extends Thread {
+	private int _id;
+	private int _time;
+	
+	public Hilo(int id, int time) {
+		_id = id;
+		_time = time;
+	}
+}

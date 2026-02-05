@@ -1,0 +1,8 @@
+package launcher;
+
+public class Main {
+
+	public static void (String[] args) {
+		Scanner scan = new Scanner(System.in);
+	}
+}
