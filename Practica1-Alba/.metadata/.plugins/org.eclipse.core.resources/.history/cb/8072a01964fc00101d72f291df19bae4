@@ -1,5 +1,0 @@
-package swift;
-
-public class Hilo extends Thread {
-
-}

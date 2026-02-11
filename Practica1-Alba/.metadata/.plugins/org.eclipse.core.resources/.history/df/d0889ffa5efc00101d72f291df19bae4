@@ -1,9 +1,0 @@
-package utils;
-
-public class Entero {
-	private int _valor;
-	
-	public Entero(int valor) {
-		_valor = valor;
-	}
-}
