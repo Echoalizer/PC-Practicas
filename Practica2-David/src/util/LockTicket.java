@@ -2,28 +2,27 @@ package util;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
-public class LockTicket extends CustomLock {
-    private int next;
-    private final AtomicInteger number;
-    private final int[] takes;
+public class LockTicket implements CustomLock {
+    private volatile int next;
+    private AtomicInteger number;
+    private volatile int[] turns;
 
     public LockTicket(int p) {
-        super(p);
-        next = 0;
-        number = new AtomicInteger(0);
-        takes = new int[p];
+        next = 1;
+        number = new AtomicInteger(1);
+        turns = new int[p];
     }
 
     @Override
     public boolean takeLock(int i) {
-        takes[i] = number.getAndIncrement();  // is this what we want?
-        while (next != takes[i])
+        turns[i] = number.getAndIncrement();  // is this what we want?
+        while (next != turns[i])
             ;
         return false;
     }
 
     @Override
-    public void releaseLock(int ignored) {
+    public void releaseLock(int i) {
         next++;
     }
 }

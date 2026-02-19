@@ -1,22 +1,24 @@
-import util.Entero;
-import util.LoopingThread;
+import util.*;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
 public class Main {
-    private static final Random rand = new Random();
-    private static final int MAX_TIME = 4000;  // para la parte 1
-    private static final Entero k = new Entero();  // a modificar por los distintos threads en la parte 2.
-    private static int[][] C;
+    private static final Entero k = new Entero();
 
     public static void main(String[] args) {
-        int n = Integer.parseInt(args[0]);
+        int p = Integer.parseInt(args[0]);
+        int n = Integer.parseInt(args[1]);
 
         List<Thread> threads = new ArrayList<>();
 
-        parte1(threads, n);
+        if (p == 1)
+            parte1(threads, n);
+        else {
+            int m = Integer.parseInt(args[2]);
+            parte2(threads, m, n);
+        }
 
         for (var t : threads) {
             try {
@@ -32,12 +34,27 @@ public class Main {
     // Evitar condición de carrera con espera activa.
     private static void parte1(List<Thread> threads, int N) {
         // Usando el algoritmo rompe-empates para dos procesos
-        var tdown = new LoopingThread(N, (dummy) -> k.decrementar());
+        var lock = new LockDual();
+        var tdown = new LoopingThread(0, N, (dummy) -> k.decrementar(), lock);
         tdown.start();
         threads.add(tdown);
 
-        var tup = new LoopingThread(N, (dummy) -> k.incrementar());
+        var tup = new LoopingThread(1, N, (dummy) -> k.incrementar(), lock);
         tup.start();
         threads.add(tup);
+    }
+
+    private static void parte2(List<Thread> threads, int M, int N) {
+        var lock = new LockTicket(2*M);
+        for (int i = 0; i < M; i++) {
+            var tdown = new LoopingThread(2*i, N, (dummy) -> k.decrementar(), lock);
+            tdown.start();
+            threads.add(tdown);
+
+            var tup = new LoopingThread((2*i)+1, N, (dummy) -> k.incrementar(), lock);
+            tup.start();
+            threads.add(tup);
+        }
+
     }
 }

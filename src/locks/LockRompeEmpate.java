@@ -1,8 +1,8 @@
-package util;
+package locks;
 
 import java.util.Arrays;
 
-public class LockRompeEmpate implements CustomLock {
+public class LockRompeEmpate implements LockId {
     protected final int processes;
     private volatile int[] in;
     private volatile int[] last;
@@ -15,7 +15,7 @@ public class LockRompeEmpate implements CustomLock {
     }
 
     @Override
-    public boolean takeLock(int i) {
+    public void takeLock(int i) {
         for (int j = 0; j < processes; j++) {
             in[i] = j;
             last[j] = i;
@@ -23,7 +23,6 @@ public class LockRompeEmpate implements CustomLock {
                 if (k != i) while (in[k] >= in[i] && last[j] == i)
                     ;  // bucle de espera activa -- hot standby
         }
-        return false;
     }
 
     @Override

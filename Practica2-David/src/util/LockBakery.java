@@ -1,8 +1,12 @@
 package util;
 
-public class LockBakery extends CustomLock {
+import java.util.concurrent.atomic.AtomicInteger;
+
+public class LockBakery implements CustomLock {
+    private int[] takes;
+
     public LockBakery(int p) {
-        super(p);
+        takes = new int[p];
     }
 
     @Override
@@ -12,6 +16,6 @@ public class LockBakery extends CustomLock {
 
     @Override
     public void releaseLock(int i) {
-
+        takes[i] = 0;
     }
 }
