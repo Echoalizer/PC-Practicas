@@ -4,19 +4,21 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class LockTicket implements CustomLock {
     private volatile int next;
-    private AtomicInteger number;
-    private volatile int[] turns;
+    private final AtomicInteger number;
+    private volatile Entero[] turns;
 
     public LockTicket(int p) {
         next = 1;
         number = new AtomicInteger(1);
-        turns = new int[p];
+        turns = new Entero[p];
+        for (int i = 0; i < p; i++)
+            turns[i] = new Entero();
     }
 
     @Override
     public boolean takeLock(int i) {
-        turns[i] = number.getAndIncrement();  // is this what we want?
-        while (next != turns[i])
+        turns[i].set_valor(number.getAndIncrement());
+        while (next != turns[i].get_valor())
             ;
         return false;
     }

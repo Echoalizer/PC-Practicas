@@ -11,6 +11,14 @@ public class Entero {
         this.n = n;
     }
 
+    public void set_valor(int num) {
+        n = num;
+    }
+
+    public int get_valor() {
+        return n;
+    }
+
     public void incrementar() {
         n++;
     }

@@ -2,7 +2,6 @@ import util.*;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 
 public class Main {
     private static final Entero k = new Entero();
