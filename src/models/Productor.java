@@ -7,9 +7,9 @@ public class Productor extends Thread {
     private final Almacen al;
     private final int iteraciones;
 
-    public Productor(int id, Almacen al, int iteraciones) {
+    public Productor(int id, Almacen almacen, int iteraciones) {
         this.id = id;
-        this.al = al;
+        this.al = almacen;
         this.iteraciones = iteraciones;
     }
 

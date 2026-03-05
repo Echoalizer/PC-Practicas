@@ -21,12 +21,12 @@ public class ThreadWithSemaphore extends Thread {
     public void run() {
         for (int i = 0; i < iterations; i++) {
             try {
-                sem.acquire();
+                sem.acquire();  // P(sem)
                 runnable.run();
             } catch (InterruptedException e) {
                 e.printStackTrace();
             } finally {
-                sem.release();
+                sem.release();  // V(sem)
             }
         }
     }

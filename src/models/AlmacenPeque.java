@@ -26,7 +26,7 @@ public class AlmacenPeque implements Almacen {
         Producto ret = null;
         try {
             full.acquire();
-            ret = buffer[0] != null ? buffer[0] : null;
+            ret = buffer[0];  // null si estuviera vacío
             buffer[0] = null;
         } catch (InterruptedException e) {
             e.printStackTrace();
@@ -38,6 +38,6 @@ public class AlmacenPeque implements Almacen {
     }
 
     public void checkBuffer() {
-        System.out.println(buffer[0] != null ? buffer[0] : "null");
+        System.out.println(buffer[0]);
     }
 }

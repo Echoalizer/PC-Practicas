@@ -1,3 +1,4 @@
+import semaforos.Semaforo;
 import util.Entero;
 import util.ThreadWithSemaphore;
 
@@ -16,6 +17,7 @@ public class Semaforo1Test {
         // creamos N threads que para sincronizarse usan un semáforo
         Entero k = new Entero(0);
         List<Thread> threads = new ArrayList<>();
+//        Semaforo sem = new Semaforo(1);
         Semaphore sem = new Semaphore(1);
 
         // Creamos M procesos que incrementan y M que decrementan

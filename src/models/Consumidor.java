@@ -7,9 +7,9 @@ public class Consumidor extends Thread {
     private final Almacen al;
     private final int iteraciones;
 
-    public Consumidor(int id, Almacen al, int iteraciones) {
+    public Consumidor(int id, Almacen almacen, int iteraciones) {
         this.id = id;
-        this.al = al;
+        this.al = almacen;
         this.iteraciones = iteraciones;
     }
 
