@@ -1,36 +1,33 @@
 package models;
 
+import control.ControllerSem;
 import util.Producto;
 
-import java.util.concurrent.Semaphore;
-
 public class AlmacenGrande implements Almacen {
+    private final ControllerSem controller;
+
     private final int N;
-    private final Producto[] buffer;  // usado como buffer circular
-    private final Semaphore empty;
-    private final Semaphore full = new Semaphore(0);
-    private final Semaphore mutexC = new Semaphore(1);
-    private final Semaphore mutexP = new Semaphore(1);
+    private final Producto[] buffer;  // usado como buffer circular de tamaño N
+
     private int ini = 0, fin = 0;
 
     public AlmacenGrande(int N) {
         this.N = N;
         this.buffer = new Producto[N];
-        this.empty = new Semaphore(N);
+        this.controller = new ControllerSem(N);
     }
 
     @Override
     public void almacenar(Producto producto) {
         try {
-            empty.acquire();
-            mutexP.acquire();
+            controller.acquireProd();
+
             buffer[fin] = producto;
             fin = (fin + 1) % N;
-            mutexP.release();
+
+            controller.releaseProd();
         } catch (InterruptedException e) {
             e.printStackTrace();
-        } finally {
-            full.release();  // si hay error metemos basura
         }
     }
 
@@ -38,16 +35,15 @@ public class AlmacenGrande implements Almacen {
     public Producto extraer() {
         Producto ret = null;
         try {
-            full.acquire();
-            mutexC.acquire();
+            controller.acquireCons();
+
             ret = buffer[ini];  // null si estuviera vacío
             buffer[ini] = null;
             ini = (ini + 1) % N;
-            mutexC.release();
+
+            controller.releaseCons();
         } catch (InterruptedException e) {
             e.printStackTrace();
-        } finally {
-            empty.release();  // si hay error perdemos el dato
         }
         return ret;
     }
