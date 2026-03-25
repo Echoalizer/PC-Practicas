@@ -1,4 +1,4 @@
-package models;
+package models.producersConsumers;
 
 import util.Producto;
 

@@ -1,4 +1,4 @@
-package models;
+package models.producersConsumers;
 
 import control.Controller;
 import control.ControllerSem;

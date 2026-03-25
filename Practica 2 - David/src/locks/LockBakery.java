@@ -1,6 +1,6 @@
-package util;
+package locks;
 
-import java.util.concurrent.atomic.AtomicInteger;
+import util.CustomLock;
 
 public class LockBakery implements CustomLock {
     private int[] takes;

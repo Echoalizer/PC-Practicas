@@ -1,7 +1,7 @@
-import models.AlmacenGrande;
-import models.AlmacenPeque;
-import models.Consumidor;
-import models.Productor;
+import models.producersConsumers.AlmacenGrande;
+import models.producersConsumers.AlmacenPeque;
+import models.producersConsumers.Consumidor;
+import models.producersConsumers.Productor;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -1,9 +1,11 @@
-package readersWriters;
+package launcher;
+
+import readersWriters.*;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class Main {
+public class ReadersWriters {
 
     public static void main(String[] args) {
         int TAM_BUFFER = Integer.parseInt(args[0]);

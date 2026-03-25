@@ -1,9 +1,11 @@
-package producersConsumers;
+package launcher;
+
+import producersConsumers.*;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class Main {
+public class ProducersConsumers {
     public static final int P = 6;
     public static final int C = 4;
     public static final int IT_PROD = 64;

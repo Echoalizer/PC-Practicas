@@ -1,4 +1,6 @@
-package util;
+package locks;
+
+import util.CustomLock;
 
 public class LockDual implements CustomLock {
     private volatile boolean in[];

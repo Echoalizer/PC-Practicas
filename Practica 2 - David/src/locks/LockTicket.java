@@ -1,4 +1,7 @@
-package util;
+package locks;
+
+import util.CustomLock;
+import util.Entero;
 
 import java.util.concurrent.atomic.AtomicInteger;
 

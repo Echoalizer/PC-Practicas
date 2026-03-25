@@ -1,4 +1,6 @@
-package util;
+package locks;
+
+import util.CustomLock;
 
 import java.util.Arrays;
 
