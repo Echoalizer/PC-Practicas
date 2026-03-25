@@ -1,17 +1,19 @@
 package monitors;
 
-public class Monitor {
+public class MonitorSync implements MonitorIncDec {
     private int k = 0;
 
-    public Monitor(int k) {
+    public MonitorSync(int k) {
         this.k = k;
     }
 
-    public synchronized void incrementar() {
+    @Override
+    public synchronized void increment() {
         this.k++;
     }
 
-    public synchronized void decrementar() {
+    @Override
+    public synchronized void decrement() {
         this.k--;
     }
 }
