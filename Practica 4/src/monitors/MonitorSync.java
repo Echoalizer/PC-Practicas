@@ -16,4 +16,9 @@ public class MonitorSync implements MonitorIncDec {
     public synchronized void decrement() {
         this.k--;
     }
+    
+    public synchronized int getValue() {
+    	return this.k;
+    }
+    
 }

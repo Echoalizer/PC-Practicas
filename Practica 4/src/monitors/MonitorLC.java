@@ -23,4 +23,13 @@ public class MonitorLC implements MonitorIncDec {
         k--;
         l.unlock();
     }
+    
+    
+    public int getValue() {
+    	
+    	//lock
+    	return k;
+    	//unlock
+    }
+    
 }
