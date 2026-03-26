@@ -7,7 +7,6 @@ public class ThreadWithSemaphore extends Thread {
     private final int iterations;
     private final Runnable runnable;
     private final Semaphore sem;
-//    private final Semaforo sem;
 
     public ThreadWithSemaphore(int id, int iterations, Semaphore s, Runnable r) {
         this.id = id;

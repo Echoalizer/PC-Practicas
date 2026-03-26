@@ -1,9 +1,9 @@
 package monitors;
 
-public class MonitorSync implements MonitorIncDec {
+public class SyncIDMonitor implements MonitorID {
     private int k = 0;
 
-    public MonitorSync(int k) {
+    public SyncIDMonitor(int k) {
         this.k = k;
     }
 

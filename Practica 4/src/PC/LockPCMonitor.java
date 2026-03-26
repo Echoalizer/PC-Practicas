@@ -1,30 +1,30 @@
-package control;
+package PC;
 
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 
 import util.Producto;
 
-public class LockPCMonitor implements Almacen{
+public class LockPCMonitor implements Almacen {
 	
 	private final Producto[] buffer; 
 	private final ReentrantLock l;
+
+	private final Condition lleno;
+	private final Condition vacio;
+
+	private final int N;
 	private int ini = 0;
 	private int fin = 0;
 	private int count = 0;
-	private int N;
-	private final Condition lleno;
-	private final Condition vacio;
 	
 	
 	public LockPCMonitor(int tamBuffer) {
-		
 		this.l = new ReentrantLock(true);
 		this.N = tamBuffer;
 		this.buffer = new Producto[tamBuffer];
 		lleno = l.newCondition();
 		vacio = l.newCondition();
-		
 	}
 	
 	@Override
@@ -55,11 +55,8 @@ public class LockPCMonitor implements Almacen{
 		count--;
 		vacio.signal();
 		
-		
 		l.unlock();
-		
 		return p;
 	}
-	
 
 }

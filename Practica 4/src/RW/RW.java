@@ -1,4 +1,4 @@
-package control;
+package RW;
 
 public interface RW {
     public void request_read() throws InterruptedException;

@@ -2,11 +2,12 @@ package monitors;
 
 import java.util.concurrent.locks.ReentrantLock;
 
-public class MonitorLC implements MonitorIncDec {
+public class LockIDMonitor implements MonitorID {
+    // Tiene sentido un controlador abstracto para este problema?
     private int k = 0;
     private final ReentrantLock l = new ReentrantLock(true);
 
-    public MonitorLC(int k) {
+    public LockIDMonitor(int k) {
         this.k = k;
     }
 
@@ -24,12 +25,11 @@ public class MonitorLC implements MonitorIncDec {
         l.unlock();
     }
     
-    
     public int getValue() {
-    	
-    	//lock
-    	return k;
-    	//unlock
+    	l.lock();
+        int res = k;
+        l.unlock();
+    	return res;
     }
     
 }

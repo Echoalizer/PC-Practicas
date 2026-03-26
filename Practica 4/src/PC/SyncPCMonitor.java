@@ -1,4 +1,4 @@
-package control;
+package PC;
 
 import util.Producto;
 
@@ -7,19 +7,16 @@ import util.Producto;
 //  			   | Variables privadas
 //				   | wait / notifyAll()
 
-
-
-public class SyncPCMonitor implements Almacen{
-	private final Producto[] buffer; 
+public class SyncPCMonitor implements Almacen {
+	private final Producto[] buffer;
+	private final int N;
 	private int ini = 0;
 	private int fin = 0;
 	private int count = 0;
-	private int N;
 	
 	public SyncPCMonitor(int tamBuffer){
 		this.N = tamBuffer;
 		this.buffer = new Producto[tamBuffer];
-		
 	}
 	
 	@Override
@@ -35,7 +32,6 @@ public class SyncPCMonitor implements Almacen{
 
 	@Override
 	public synchronized Producto extraer() throws InterruptedException{
-
 		Producto p;
 		while(count == 0)
 			wait();
@@ -46,7 +42,4 @@ public class SyncPCMonitor implements Almacen{
 		
 		return p;
 	}
-
-
-
 }

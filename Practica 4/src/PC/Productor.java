@@ -1,13 +1,13 @@
-package control;
+package PC;
 
 import util.Producto;
 
-public class Consumidor extends Thread {
+public class Productor extends Thread {
     private final int id;
     private final Almacen al;
     private final int iteraciones;
 
-    public Consumidor(int id, Almacen almacen, int iteraciones) {
+    public Productor(int id, Almacen almacen, int iteraciones) {
         this.id = id;
         this.al = almacen;
         this.iteraciones = iteraciones;
@@ -16,18 +16,13 @@ public class Consumidor extends Thread {
     @Override
     public void run() {
         for (int i = 0; i < iteraciones; i++) {
-            Producto p;
-			try {
-				p = al.extraer();
-	            consumir(p);
+            Producto p = new Producto(id, i);
+            try {
+				al.almacenar(p);
 			} catch (InterruptedException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
         }
-    }
-
-    private void consumir(Producto p) {
-        System.out.printf("consumidor %d consume: %s\n", id, p);
     }
 }

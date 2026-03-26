@@ -3,10 +3,10 @@ package launcher;
 import java.util.ArrayList;
 import java.util.List;
 
-import control.Almacen;
-import control.Consumidor;
-import control.Productor;
-import control.SyncPCMonitor;
+import PC.Almacen;
+import PC.Consumidor;
+import PC.Productor;
+import PC.SyncPCMonitor;
 
 
 public class PCMain {
@@ -45,7 +45,6 @@ public class PCMain {
     	}
     	
 		System.out.println();  // comprobacion
-
-    	
 	}
+
 }

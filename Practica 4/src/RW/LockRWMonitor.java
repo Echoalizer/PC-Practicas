@@ -1,15 +1,15 @@
-package control;
+package RW;
 
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 
 public class LockRWMonitor implements RW{
-
-	private int nr;
-	private int nw;
 	private final ReentrantLock l;
 	private final Condition okToRead;
 	private final Condition okToWrite;
+
+	private int nr;
+	private int nw;
 	
 	public LockRWMonitor() {
 		l = new ReentrantLock(true);
@@ -46,12 +46,10 @@ public class LockRWMonitor implements RW{
 		l.lock();
 		
 		nr--;
-		
 		if(nr== 0)
 			okToWrite.signal();
 		
 		l.unlock();
-		
 	}
 
 	@Override

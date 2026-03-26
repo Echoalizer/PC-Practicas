@@ -1,11 +1,8 @@
-package control;
+package RW;
 
 public class SyncRWMonitor implements RW {
-
 	private int nr = 0;
 	private int nw = 0;
-	
-	
 	
 	@Override
 	public synchronized void request_read() throws InterruptedException {
@@ -21,23 +18,16 @@ public class SyncRWMonitor implements RW {
 		nw++;
 	}
 
-	
-	
-	
 	@Override
 	public synchronized void release_read() throws InterruptedException {
 		nr--;
-		
-		if(nr== 0)
-			notify(); // DE ESTA FORMA, SE DESPIERTA UN READER O WRITER????
-		
+		if(nr == 0)
+			notifyAll();
 	}
 
 	@Override
 	public synchronized void release_write() throws InterruptedException {
 		nw--;
-		notifyAll(); // COMO DIFERENCIAMOS UN READER DE UN WRITER??
-		
+		notifyAll();
 	}
-
 }

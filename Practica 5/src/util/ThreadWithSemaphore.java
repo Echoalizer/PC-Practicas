@@ -25,7 +25,7 @@ public class ThreadWithSemaphore extends Thread {
             } catch (InterruptedException e) {
                 e.printStackTrace();
             } finally {
-                sem.release();  // V(sem)
+                sem.release();  // V(sem) //! deberia estar en el try?
             }
         }
     }

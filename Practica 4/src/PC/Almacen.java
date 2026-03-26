@@ -1,4 +1,4 @@
-package control;
+package PC;
 
 import util.Producto;
 
