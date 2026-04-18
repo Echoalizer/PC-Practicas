@@ -12,7 +12,8 @@ public class Cliente {
 
         try {
             Socket s = new Socket(IP, port);
-            System.out.printf("connected to port %d on host @%s\n", s.getLocalPort(), s.getLocalAddress());
+            System.out.printf("open at %s:%d\n", s.getLocalAddress(), s.getLocalPort());
+            System.out.printf("connected to %s:%d\n", s.getInetAddress(), s.getPort());
 
             BufferedReader cin = new BufferedReader(new InputStreamReader(s.getInputStream()));
             PrintWriter cout = new PrintWriter(s.getOutputStream());

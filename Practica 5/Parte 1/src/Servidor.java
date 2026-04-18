@@ -11,9 +11,9 @@ public class Servidor {
 //        while (true) {
             try {
                 ServerSocket listen = new ServerSocket(99);
-                System.out.println("server ready");
+                System.out.printf("server reachable at %s:%d\n", listen.getInetAddress(), listen.getLocalPort());
                 Socket ss = listen.accept();
-                System.out.println("connection successful");
+                System.out.printf("connection successful with %s:%d\n", ss.getInetAddress(), ss.getPort());
 
 
                 // Codigo oyente
