@@ -51,7 +51,7 @@ public class OyenteCliente extends Thread {
                     case "conexion_cs":
                         String userId = (String) msg.getObject();
                         almacen.postUser(userId, clientIpAddress);
-                        fout.writeObject(new Mensaje("confirmacion_conexion"));
+                        fout.writeObject(new Mensaje("confirmacion_conexion", "OK"));
                         break;
                     case "solicitud_lista":
                         fout.writeObject(new Mensaje("respuesta_lista", almacen.getLista()));
@@ -71,6 +71,7 @@ public class OyenteCliente extends Thread {
                         canal2.writeObject(new Mensaje("preparado_sc", ip)); // del servidor
                         break;
                     case "desconexion_cs":
+                        // remove IP address from user
                         fout.close();
                         fin.close();
                         s.close();

@@ -1,20 +1,21 @@
 package model;
 
 import java.net.SocketAddress;
+import java.util.ArrayList;
 import java.util.List;
 
 public class Usuario {
     private final String id;
-    private SocketAddress ipAddress;
-    private List<Musica> musicas;
+    private final List<Musica> musicas;
 
-//    public Usuario(String id) {
-//        this.id = id;
-//    }
+    private SocketAddress ipAddress;
 
     public Usuario(String id, SocketAddress ipAddress) {
         this.id = id;
         this.ipAddress = ipAddress;
+        this.musicas = new ArrayList<>();
+
+
     }
 
     public String getId() {
@@ -27,6 +28,10 @@ public class Usuario {
 
     public void setIpAddress(SocketAddress ipAddress) {
         this.ipAddress = ipAddress;
+    }
+
+    public void removeIpAddress() {
+        this.ipAddress = null;
     }
 
     public List<Musica> getSharedData() {

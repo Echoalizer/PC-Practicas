@@ -34,21 +34,16 @@ public class OyenteServidor extends Thread {
     @Override
     public void run() {
         try {
-            // Mensaje de conexión
-            fout.writeObject(new Mensaje("conexion"));  // login aquí
-            Mensaje confirmacion = (Mensaje)fin.readObject();
-
-            System.out.println("Conexión establecida: " + confirmacion.getObject());
-
             Scanner reader = new Scanner(System.in);
 
-            // login
             System.out.println("login: ");
             String login = reader.nextLine();
 
-            // buscar nombre en server o añadir
-            fout.writeObject(new Mensaje("login",  login));
-            // servidor devuelve que?
+            // Mensaje de conexión
+            fout.writeObject(new Mensaje("conexion_cs", login));  // login aquí
+            Mensaje confirmacion = (Mensaje)fin.readObject();
+
+            System.out.println("Conexión establecida: " + confirmacion.getObject());
 
             while (true) {
                 System.out.printf("%s %% ", hostName);
