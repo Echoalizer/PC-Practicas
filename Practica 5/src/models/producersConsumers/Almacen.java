@@ -9,12 +9,12 @@ public interface Almacen {
      * hueco el proceso que ejecute el metodo bloqueará hasta que lo
      * haya.
      */
-    public void almacenar(Producto producto);
+    void almacenar(Producto producto) throws InterruptedException;
 
     /**
      * Extrae el primer producto disponible. Si no hay productos el
      * proceso que ejecute el metodo bloqueará hasta que se almacene un
      * dato.
      */
-    public Producto extraer();
+    Producto extraer() throws InterruptedException;
 }

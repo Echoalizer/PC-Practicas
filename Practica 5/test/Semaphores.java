@@ -1,5 +1,3 @@
-package launcher;
-
 import util.Entero;
 import util.ThreadWithSemaphore;
 
@@ -33,8 +31,7 @@ public class Semaphores {
         for (var t : threads) {
             try {
                 t.join();
-            } catch (InterruptedException e) {
-                e.printStackTrace();
+            } catch (InterruptedException ignored) {
             }
         }
         System.out.println("\nAll threads terminated.");

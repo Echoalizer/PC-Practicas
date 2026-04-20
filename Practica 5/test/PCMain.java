@@ -1,12 +1,10 @@
-package launcher;
+import models.producersConsumers.Almacen;
+import models.producersConsumers.Consumidor;
+import models.producersConsumers.Productor;
+import models.producersConsumers.SyncPCMonitor;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import PC.Almacen;
-import PC.Consumidor;
-import PC.Productor;
-import PC.SyncPCMonitor;
 
 
 public class PCMain {
@@ -38,9 +36,7 @@ public class PCMain {
     	for(var i : lista) {
     		try {
 				i.join();
-			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+			} catch (InterruptedException ignored) {
 			}
     	}
     	

@@ -1,12 +1,9 @@
-package launcher;
+import monitors.LockIDMonitor;
+import monitors.MonitorID;
+import util.ThreadMonitor;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import monitors.LockIDMonitor;
-import monitors.MonitorID;
-
-import util.ThreadMonitor;
 
 class IDMain {
 
@@ -31,9 +28,7 @@ class IDMain {
     	for(var i : lista) {
     		try {
 				i.join();
-			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+			} catch (InterruptedException ignored) {
 			}
     	}
     	

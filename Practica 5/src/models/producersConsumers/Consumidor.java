@@ -16,8 +16,12 @@ public class Consumidor extends Thread {
     @Override
     public void run() {
         for (int i = 0; i < iteraciones; i++) {
-            Producto p = al.extraer();
-            consumir(p);
+            Producto p;
+            try {
+                p = al.extraer();
+                consumir(p);
+            } catch (InterruptedException ignored) {
+            }
         }
     }
 

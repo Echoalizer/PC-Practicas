@@ -1,6 +1,7 @@
-package launcher;
-
-import readersWriters.*;
+import models.readersWriters.AlmacenRW;
+import models.readersWriters.AlmacenRWI;
+import models.readersWriters.Escritor;
+import models.readersWriters.Lector;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -32,8 +33,7 @@ public class ReadersWriters {
         for (var t : threads) {
             try {
                 t.join();
-            } catch (InterruptedException e) {
-                e.printStackTrace();
+            } catch (InterruptedException ignored) {
             }
         }
 

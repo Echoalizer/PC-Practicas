@@ -1,4 +1,4 @@
-package PC;
+package models.producersConsumers;
 
 import util.Producto;
 

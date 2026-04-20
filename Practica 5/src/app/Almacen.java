@@ -1,5 +1,6 @@
 package app;
 
+import control.ReadWriteController;
 import model.Musica;
 import model.Usuario;
 
@@ -10,14 +11,14 @@ import java.util.Map;
 import java.util.Set;
 
 public class Almacen {
-    private final RW controller;
+    private final ReadWriteController controller;
 
     // lista de usuarios
     private final Set<Usuario> usuarios;
     // Informacion (musica) que tiene cada usuario
     private final Map<Musica, Usuario> mapa_informacion;
 
-    public Almacen(RW controller) {
+    public Almacen(ReadWriteController controller) {
         this.controller = controller;
 
         usuarios = new HashSet<>();

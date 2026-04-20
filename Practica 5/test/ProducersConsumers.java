@@ -1,6 +1,7 @@
-package launcher;
-
-import producersConsumers.*;
+import models.producersConsumers.AlmacenGrande;
+import models.producersConsumers.AlmacenPeque;
+import models.producersConsumers.Consumidor;
+import models.producersConsumers.Productor;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -34,8 +35,7 @@ public class ProducersConsumers {
         for (var t : threads) {
             try {
                 t.join();
-            } catch (InterruptedException e) {
-                e.printStackTrace();
+            } catch (InterruptedException ignored) {
             }
         }
 

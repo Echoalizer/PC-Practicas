@@ -1,17 +1,22 @@
 package models.readersWriters;
 
-import control.RW;
 import control.RWSem;
+import control.ReadWriteController;
 import util.Producto;
 
 public class AlmacenRW implements AlmacenRWI {
-    private final RW controller;
+    private final ReadWriteController controller;
 
     private final Producto[] buffer;  // usado como buffer circular de tamaño N
 
     public AlmacenRW(int N) {
         this.buffer = new Producto[N];
         this.controller = new RWSem();
+    }
+
+    public AlmacenRW(int N, ReadWriteController controller) {
+        this.buffer = new Producto[N];
+        this.controller = controller;
     }
 
     @Override
@@ -22,8 +27,7 @@ public class AlmacenRW implements AlmacenRWI {
             buffer[pos] = producto;
 
             controller.release_write();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
+        } catch (InterruptedException ignored) {
         }
     }
 
@@ -38,8 +42,7 @@ public class AlmacenRW implements AlmacenRWI {
 //            System.out.println(sol);
 
             controller.release_read();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
+        } catch (InterruptedException ignored) {
         }
         return sol;
     }

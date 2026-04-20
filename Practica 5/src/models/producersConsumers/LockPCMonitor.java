@@ -1,9 +1,9 @@
-package PC;
+package models.producersConsumers;
+
+import util.Producto;
 
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
-
-import util.Producto;
 
 public class LockPCMonitor implements Almacen {
 	

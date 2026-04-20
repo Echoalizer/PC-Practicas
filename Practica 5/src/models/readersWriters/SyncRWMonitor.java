@@ -1,6 +1,8 @@
-package RW;
+package models.readersWriters;
 
-public class SyncRWMonitor implements RW {
+import control.ReadWriteController;
+
+public class SyncRWMonitor implements ReadWriteController {
 	private int nr = 0;
 	private int nw = 0;
 	
@@ -19,14 +21,14 @@ public class SyncRWMonitor implements RW {
 	}
 
 	@Override
-	public synchronized void release_read() throws InterruptedException {
+	public synchronized void release_read() {
 		nr--;
 		if(nr == 0)
 			notifyAll();
 	}
 
 	@Override
-	public synchronized void release_write() throws InterruptedException {
+	public synchronized void release_write() {
 		nw--;
 		notifyAll();
 	}

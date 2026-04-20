@@ -1,9 +1,8 @@
-package launcher;
+import control.ReadWriteController;
+import models.readersWriters.*;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import RW.*;
 
 public class RWMain {
 
@@ -16,7 +15,7 @@ public class RWMain {
 
         List<Thread> lista = new ArrayList<>();
 
-        RW control = new LockRWMonitor();
+        ReadWriteController control = new LockRWMonitor();
         AlmacenRWI al = new AlmacenRW(n, control);
 
         for (int i = 0; i < e; i++) {
@@ -32,11 +31,10 @@ public class RWMain {
         }
 
 
-        for(var i : lista) {
+        for (var i : lista) {
             try {
                 i.join();
             } catch (InterruptedException ignored) {
-                ignored.printStackTrace();
             }
         }
 

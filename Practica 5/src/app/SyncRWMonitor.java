@@ -1,6 +1,8 @@
 package app;
 
-public class SyncRWMonitor implements RW {
+import control.ReadWriteController;
+
+public class SyncRWMonitor implements ReadWriteController {
     private int nr = 0;
     private int nw = 0;
 

@@ -1,9 +1,11 @@
 package app;
 
+import control.ReadWriteController;
+
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 
-public class LockRWMonitor implements RW {
+public class LockRWMonitor implements ReadWriteController {
 	private final ReentrantLock l;
 	private final Condition okToRead;
 	private final Condition okToWrite;
