@@ -37,12 +37,6 @@ public class OyenteCliente extends Thread {
                     case "conexion":
                         fout.writeObject(new Mensaje("confirmacion_conexion"));
                         break;
-                    case "login":
-                        String user = (String) msg.getObject();
-                        // is user not in users
-                            // add
-                        // else
-                            // save ip; set alive to true
                     case "pedir":
                         String str = (String) msg.getObject();
                         Entero k = new Entero(Integer.parseInt(str));
