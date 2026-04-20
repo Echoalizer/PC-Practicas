@@ -20,7 +20,7 @@ public class Servidor {
                 (new OyenteCliente(ss)).start();
             }
         } catch (IOException e) {
-            System.out.printf("error accepting %s\n", e.getMessage());
+            System.err.printf("error accepting %s\n", e.getMessage());
             throw new RuntimeException(e);
         }
     }

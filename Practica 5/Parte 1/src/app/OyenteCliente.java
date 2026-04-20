@@ -3,7 +3,10 @@ package app;
 import model.Entero;
 import model.Mensaje;
 
-import java.io.*;
+import java.io.EOFException;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.net.Socket;
 
 public class OyenteCliente extends Thread {
@@ -21,7 +24,7 @@ public class OyenteCliente extends Thread {
             // Object streams normally (but not always) auto-flush
             fout = new ObjectOutputStream(s.getOutputStream());
         } catch (IOException e) {
-            System.out.printf("Read failed: %s", e.getMessage());
+            System.err.printf("Read failed: %s", e.getMessage());
             System.exit(-1);
         }
     }
@@ -50,9 +53,9 @@ public class OyenteCliente extends Thread {
                 }
             }
         } catch (EOFException e) {
-            System.out.printf("Client '%s' disconnected abruptly.\n", name);
+            System.err.printf("Client '%s' disconnected abruptly.\n", name);
         } catch (IOException | ClassNotFoundException e) {
-            System.out.printf("Client '%s' ended with error: %s\n", name, e.getMessage());
+            System.err.printf("Client '%s' ended with error: %s\n", name, e.getMessage());
         }
     }
 }

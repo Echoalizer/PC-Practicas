@@ -26,7 +26,7 @@ public class OyenteServidor extends Thread {
             fout = new ObjectOutputStream(s.getOutputStream());
             fin = new ObjectInputStream(s.getInputStream());
         } catch (IOException e) {
-            System.out.println("Could not create channel: " + e.getMessage());
+            System.err.println("Could not create channel: " + e.getMessage());
             throw e;
         }
     }
@@ -34,11 +34,8 @@ public class OyenteServidor extends Thread {
     @Override
     public void run() {
         try {
-            System.out.printf("open at %s:%d\n", s.getLocalAddress(), s.getLocalPort());
-            System.out.printf("connected to %s:%d\n", s.getInetAddress(), s.getPort());
-
             fout.writeObject(new Mensaje("conexion"));
-            Mensaje confirmacion = (Mensaje)fin.readObject();
+            Mensaje confirmacion = (Mensaje) fin.readObject();
 
             System.out.println("Conexión establecida: " + confirmacion.getObject());
 
@@ -66,19 +63,15 @@ public class OyenteServidor extends Thread {
                 }
 
                 // Tratamiento de mensajes del servidor
-                Mensaje answer = (Mensaje)fin.readObject();
-                switch(answer.getTipo()) {
-                    case "devolver":
-                        Entero e = (Entero)answer.getObject();
-                        System.out.println(e.get_valor());
-                        break;
-                    default:
-                        break;
+                Mensaje answer = (Mensaje) fin.readObject();
+                if (answer.getTipo().equals("devolver")) {
+                    Entero e = (Entero) answer.getObject();
+                    System.out.println(e.get_valor());
                 }
             }
 
         } catch (Exception e) {
-            System.out.printf("Server unreachable: %s\n", e.getMessage());
+            System.err.printf("Server unreachable: %s\n", e.getMessage());
             System.exit(-1);
         }
     }
