@@ -3,7 +3,7 @@ package app;
 import model.Musica;
 import model.Usuario;
 
-import java.net.InetAddress;
+import java.net.SocketAddress;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -51,7 +51,7 @@ public class Almacen {
         return owner;
     }
 
-    public void postUser(String userId, InetAddress clientIP) {
+    public void postUser(String userId, SocketAddress clientIP) {
         try {
             controller.request_write();
             Usuario user = usuarios.stream().filter(u -> u.getId().equals(userId)).findFirst().orElse(null);

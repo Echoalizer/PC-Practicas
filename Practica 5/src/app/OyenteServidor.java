@@ -25,7 +25,7 @@ public class OyenteServidor extends Thread {
             fout = new ObjectOutputStream(s.getOutputStream());
             fin = new ObjectInputStream(s.getInputStream());
         } catch (IOException e) {
-            System.out.println("Could not create channel: " + e.getMessage());
+            System.err.println("Could not create channel: " + e.getMessage());
             throw e;
         }
     }
@@ -73,6 +73,8 @@ public class OyenteServidor extends Thread {
                 // Tratamiento de mensajes del servidor
                 Mensaje answer = (Mensaje)fin.readObject();
                 switch(answer.getTipo()) {
+                    case "confirmacion_conexion_cs":
+                        break;
                     case "respuesta_lista":
                         break;
                     case "emitir_cancion":
@@ -86,17 +88,18 @@ public class OyenteServidor extends Thread {
                         // magic number!!
                         (new ConexionCC(ipAddress, 5000)).start();
                         break;
-                    case "devolver":
-//                        Entero e = (Entero)answer.getObject();
-//                        System.out.println(e.get_valor());
+                    case "desconexion_sc":
+                        System.out.println("Server disconnected.");
+                        // cerrar todos los recursos y terminar
                         break;
                     default:
+                        // mensaje desconocido
                         break;
                 }
             }
 
         } catch (Exception e) {
-            System.out.printf("Server unreachable: %s\n", e.getMessage());
+            System.err.printf("Server unreachable: %s\n", e.getMessage());
             System.exit(-1);
         }
     }

@@ -30,7 +30,7 @@ public class Servidor {
             }
             // apagar y broadcast desconexion
         } catch (IOException e) {
-            System.out.printf("error accepting %s\n", e.getMessage());
+            System.err.printf("error accepting %s\n", e.getMessage());
             throw new RuntimeException(e);
         }
     }

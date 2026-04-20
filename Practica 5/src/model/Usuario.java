@@ -1,18 +1,18 @@
 package model;
 
-import java.net.InetAddress;
+import java.net.SocketAddress;
 import java.util.List;
 
 public class Usuario {
     private final String id;
-    private InetAddress ipAddress;
+    private SocketAddress ipAddress;
     private List<Musica> musicas;
 
 //    public Usuario(String id) {
 //        this.id = id;
 //    }
 
-    public Usuario(String id, InetAddress ipAddress) {
+    public Usuario(String id, SocketAddress ipAddress) {
         this.id = id;
         this.ipAddress = ipAddress;
     }
@@ -21,11 +21,11 @@ public class Usuario {
         return id;
     }
 
-    public InetAddress getIpAddress() {
+    public SocketAddress getIpAddress() {
         return ipAddress;
     }
 
-    public void setIpAddress(InetAddress ipAddress) {
+    public void setIpAddress(SocketAddress ipAddress) {
         this.ipAddress = ipAddress;
     }
 

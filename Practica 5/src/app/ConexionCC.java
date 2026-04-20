@@ -48,9 +48,24 @@ public class ConexionCC extends Thread {
     @Override
     public void run() {
         try {
-            cout.writeObject(new Mensaje("conexion"));
-        } catch (IOException ignored) {
-
+            Mensaje msg = (Mensaje) cin.readObject();
+            switch (msg.getTipo()) {
+                case "conexion_cc":
+                    break;
+                case "confirmacion_conexion_cc":
+                    break;
+                case "solicitud_cancion_cc":
+                    break;
+                case "enviar_cancion_cc":
+                    break;
+                case "desconexion_cc":
+                    break;
+                default:
+                    // mensaje desconocido
+                    break;
+            }
+        } catch (IOException | ClassNotFoundException e) {
+            System.err.println("Oh no!");
         }
     }
 

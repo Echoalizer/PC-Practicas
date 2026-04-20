@@ -2,31 +2,30 @@ package app;
 
 import model.Usuario;
 
-import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.net.InetAddress;
+import java.net.SocketAddress;
+import java.util.HashMap;
 import java.util.Map;
 
 // concurrent
 public class Canales {
+
     // mapa de clientes -> canales
-    private Map<InetAddress, ObjectOutputStream> clientes;
+    private final Map<SocketAddress, ObjectOutputStream> canales;
 
-    // mapa de canales -> puertos
-    private Map<Integer, ?> canales;
-
-    public Canales() {}
-
-    public void get(Usuario u) {
-
+    public Canales() {
+        canales = new HashMap<>();
     }
 
-    public void save(InetAddress address, ObjectOutputStream out) {
-
+    public ObjectOutputStream get(Usuario u) {
+        SocketAddress ip = u.getIpAddress();
+        return canales.get(ip);
     }
 
-    public void save(InetAddress address, ObjectInputStream in) {
-
+    public void save(SocketAddress address, ObjectOutputStream out) {
+        canales.put(address, out);
     }
+
+//    public void save(InetAddress address, ObjectInputStream in) { }
 
 }
