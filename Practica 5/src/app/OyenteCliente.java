@@ -28,6 +28,9 @@ public class OyenteCliente extends Thread {
             fin = new ObjectInputStream(s.getInputStream());
             // Object streams normally (but not always) auto-flush
             fout = new ObjectOutputStream(s.getOutputStream());
+
+            canales.save(clientIpAddress, fin);
+            canales.save(clientIpAddress, fout);
         } catch (IOException e) {
             System.out.printf("Read failed: %s", e.getMessage());
             System.exit(-1);
@@ -61,6 +64,7 @@ public class OyenteCliente extends Thread {
                         // envia a c1
                         String str = (String) msg.getObject();
                         Entero k = new Entero(Integer.parseInt(str));
+
                         fout.writeObject(new Mensaje("devolver", k)); // del servidor
                         break;
                     case "desconexion_cs":

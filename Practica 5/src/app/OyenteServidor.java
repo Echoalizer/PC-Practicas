@@ -7,7 +7,7 @@ import model.Usuario;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.net.Socket;
+import java.net.InetAddress;import java.net.Socket;
 import java.util.Scanner;
 
 public class OyenteServidor extends Thread {
@@ -75,6 +75,19 @@ public class OyenteServidor extends Thread {
                 // Tratamiento de mensajes del servidor
                 Mensaje answer = (Mensaje)fin.readObject();
                 switch(answer.getTipo()) {
+                    case "respuesta_lista":
+                        break;
+                    case "emitir_cancion":
+                        // recibir IP y puerto de cliente
+                        (new ConexionCC(ConexionCC.Listen())).start();  // esto es bloqueante??
+                        fout.writeObject(new Mensaje("preparado_cs", s.getLocalAddress()));
+                        break;
+                    case "preparado_sc":
+                        InetAddress ipAddress = (InetAddress)answer.getObject();
+
+                        // magic number!!
+                        (new ConexionCC(ipAddress, 5000)).start();
+                        break;
                     case "devolver":
                         Entero e = (Entero)answer.getObject();
                         System.out.println(e.get_valor());
