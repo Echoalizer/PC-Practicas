@@ -8,9 +8,9 @@ public class Usuario {
     private InetAddress ipAddress;
     private List<Musica> musicas;
 
-    public Usuario(String id) {
-        this.id = id;
-    }
+//    public Usuario(String id) {
+//        this.id = id;
+//    }
 
     public Usuario(String id, InetAddress ipAddress) {
         this.id = id;

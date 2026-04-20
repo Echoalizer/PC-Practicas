@@ -4,7 +4,10 @@ import model.Musica;
 import model.Usuario;
 
 import java.net.InetAddress;
-import java.util.*;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 public class Almacen {
     private final RW controller;
@@ -14,7 +17,7 @@ public class Almacen {
     // Informacion (musica) que tiene cada usuario
     private final Map<Musica, Usuario> mapa_informacion;
 
-    public Almacen(String dir, RW controller) {
+    public Almacen(RW controller) {
         this.controller = controller;
 
         usuarios = new HashSet<>();

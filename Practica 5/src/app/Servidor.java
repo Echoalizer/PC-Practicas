@@ -14,7 +14,7 @@ public class Servidor {
     private static final String dir = "server_files/";
 
     public static void main (String[] args) {
-        Almacen almacen = new Almacen(dir, new SyncRWMonitor());
+        Almacen almacen = new Almacen(new SyncRWMonitor());
         Canales canales = new Canales();
 
         int puerto = DEFAULT_PORT;

@@ -49,7 +49,7 @@ public class ConexionCC extends Thread {
     public void run() {
         try {
             cout.writeObject(new Mensaje("conexion"));
-        } catch (IOException e) {
+        } catch (IOException ignored) {
 
         }
     }

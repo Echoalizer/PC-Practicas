@@ -1,8 +1,6 @@
 package app;
 
-import model.Entero;
 import model.Mensaje;
-import model.Usuario;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -89,8 +87,8 @@ public class OyenteServidor extends Thread {
                         (new ConexionCC(ipAddress, 5000)).start();
                         break;
                     case "devolver":
-                        Entero e = (Entero)answer.getObject();
-                        System.out.println(e.get_valor());
+//                        Entero e = (Entero)answer.getObject();
+//                        System.out.println(e.get_valor());
                         break;
                     default:
                         break;

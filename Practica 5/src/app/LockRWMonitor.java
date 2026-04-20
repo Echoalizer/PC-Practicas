@@ -42,7 +42,7 @@ public class LockRWMonitor implements RW {
 	}
 
 	@Override
-	public void release_read() throws InterruptedException {
+	public void release_read() {
 		l.lock();
 		
 		nr--;
@@ -53,7 +53,7 @@ public class LockRWMonitor implements RW {
 	}
 
 	@Override
-	public void release_write() throws InterruptedException {
+	public void release_write() {
 		l.lock();
 		
 		nw--;
