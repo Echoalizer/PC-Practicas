@@ -1,5 +1,7 @@
 package app;
 
+import readersWriters.SyncRWMonitor;
+
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.ServerSocket;
@@ -14,7 +16,7 @@ public class Servidor {
     private static final String dir = "server_files/";
 
     public static void main (String[] args) {
-        Almacen almacen = new Almacen(dir, new SyncRWMonitor());
+        Almacen almacen = new Almacen(new SyncRWMonitor());
         Canales canales = new Canales();
 
         int puerto = DEFAULT_PORT;
@@ -30,7 +32,7 @@ public class Servidor {
             }
             // apagar y broadcast desconexion
         } catch (IOException e) {
-            System.out.printf("error accepting %s\n", e.getMessage());
+            System.err.printf("error accepting %s\n", e.getMessage());
             throw new RuntimeException(e);
         }
     }

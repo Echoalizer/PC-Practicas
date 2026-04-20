@@ -2,20 +2,23 @@ package app;
 
 import model.Musica;
 import model.Usuario;
+import readersWriters.ReadWriteController;
 
-import java.net.InetAddress;
-import java.nio.channels.SocketChannel;
-import java.util.*;
+import java.net.SocketAddress;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 public class Almacen {
-    private final RW controller;
+    private final ReadWriteController controller;
 
     // lista de usuarios
     private final Set<Usuario> usuarios;
     // Informacion (musica) que tiene cada usuario
     private final Map<Musica, Usuario> mapa_informacion;
 
-    public Almacen(String dir, RW controller) {
+    public Almacen(ReadWriteController controller) {
         this.controller = controller;
 
         usuarios = new HashSet<>();
@@ -49,7 +52,7 @@ public class Almacen {
         return owner;
     }
 
-    public void postUser(String userId, InetAddress clientIP) {
+    public void postUser(String userId, SocketAddress clientIP) {
         try {
             controller.request_write();
             Usuario user = usuarios.stream().filter(u -> u.getId().equals(userId)).findFirst().orElse(null);

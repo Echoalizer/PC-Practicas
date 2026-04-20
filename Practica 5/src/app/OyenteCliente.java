@@ -1,15 +1,17 @@
 package app;
 
-import model.Entero;
 import model.Mensaje;
 
-import java.io.*;
-import java.net.InetAddress;
+import java.io.EOFException;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.net.Socket;
+import java.net.SocketAddress;
 
 public class OyenteCliente extends Thread {
     private final String name;
-    private final InetAddress clientIpAddress;
+    private final SocketAddress clientIpAddress;
     private final Socket s;
 
     private final Almacen almacen;
@@ -22,14 +24,17 @@ public class OyenteCliente extends Thread {
         this.s = s;
         this.almacen = al;
         this.canales = c;
-        this.clientIpAddress = s.getInetAddress();
-        name = "oyente@" + clientIpAddress.getHostAddress() + ":" + s.getPort();
+        this.clientIpAddress = s.getLocalSocketAddress();
+        name = "oyente@" + clientIpAddress;
         try {
             fin = new ObjectInputStream(s.getInputStream());
             // Object streams normally (but not always) auto-flush
             fout = new ObjectOutputStream(s.getOutputStream());
+
+//            canales.save(clientIpAddress, fin);
+            canales.save(clientIpAddress, fout);
         } catch (IOException e) {
-            System.out.printf("Read failed: %s", e.getMessage());
+            System.err.printf("Read failed: %s", e.getMessage());
             System.exit(-1);
         }
     }
@@ -37,7 +42,8 @@ public class OyenteCliente extends Thread {
     @Override
     public void run() {
         try {
-            listen: while (true) {  // label used to break loop
+            listen:
+            while (true) {  // label used to break loop
                 Mensaje msg = (Mensaje) fin.readObject();
                 System.out.printf("%s %s\n", name, msg);
 
@@ -45,7 +51,7 @@ public class OyenteCliente extends Thread {
                     case "conexion_cs":
                         String userId = (String) msg.getObject();
                         almacen.postUser(userId, clientIpAddress);
-                        fout.writeObject(new Mensaje("confirmacion_conexion"));
+                        fout.writeObject(new Mensaje("confirmacion_conexion", "OK"));
                         break;
                     case "solicitud_lista":
                         fout.writeObject(new Mensaje("respuesta_lista", almacen.getLista()));
@@ -53,27 +59,32 @@ public class OyenteCliente extends Thread {
                     case "solicitud_cancion":
                         String cancion = (String) msg.getObject();
                         var usuario = almacen.getOwner(cancion);
+                        // acceso concurrente
                         var canal = canales.get(usuario);
                         canal.writeObject(new Mensaje("emitir_cancion"));
                         break;
                     case "preparado_cs":
                         // mensaje contiene IP, puerto destino de ambos
+                        var ip = (SocketAddress) msg.getObject();
                         // envia a c1
-                        String str = (String) msg.getObject();
-                        Entero k = new Entero(Integer.parseInt(str));
-                        fout.writeObject(new Mensaje("devolver", k)); // del servidor
+                        var canal2 = canales.get(ip);
+                        canal2.writeObject(new Mensaje("preparado_sc", ip)); // del servidor
                         break;
                     case "desconexion_cs":
+                        // remove IP address from user
                         fout.close();
                         fin.close();
                         s.close();
                         break listen;
+                    default:
+                        // mensaje desconocido
+                        break;
                 }
             }
         } catch (EOFException e) {
-            System.out.printf("Client '%s' disconnected abruptly.\n", name);
+            System.err.printf("Client '%s' disconnected abruptly.\n", name);
         } catch (IOException | ClassNotFoundException e) {
-            System.out.printf("Client '%s' ended with error: %s\n", name, e.getMessage());
+            System.err.printf("Client '%s' ended with error: %s\n", name, e.getMessage());
         }
     }
 }

@@ -1,8 +1,8 @@
-package control;
+package readersWriters;
 
 import java.util.concurrent.Semaphore;
 
-public class RWSem implements RW {
+public class RWSem implements ReadWriteController {
     private final Semaphore r = new Semaphore(0);
     private final Semaphore w = new Semaphore(0);
     private final Semaphore e = new Semaphore(1);

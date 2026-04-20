@@ -1,13 +1,12 @@
 package app;
 
-import model.Entero;
 import model.Mensaje;
-import model.Usuario;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
+import java.net.SocketAddress;
 import java.util.Scanner;
 
 public class OyenteServidor extends Thread {
@@ -27,7 +26,7 @@ public class OyenteServidor extends Thread {
             fout = new ObjectOutputStream(s.getOutputStream());
             fin = new ObjectInputStream(s.getInputStream());
         } catch (IOException e) {
-            System.out.println("Could not create channel: " + e.getMessage());
+            System.err.println("Could not create channel: " + e.getMessage());
             throw e;
         }
     }
@@ -35,21 +34,16 @@ public class OyenteServidor extends Thread {
     @Override
     public void run() {
         try {
-            // Mensaje de conexión
-            fout.writeObject(new Mensaje("conexion"));  // login aquí
-            Mensaje confirmacion = (Mensaje)fin.readObject();
-
-            System.out.println("Conexión establecida: " + confirmacion.getObject());
-
             Scanner reader = new Scanner(System.in);
 
-            // login
             System.out.println("login: ");
             String login = reader.nextLine();
 
-            // buscar nombre en server o añadir
-            fout.writeObject(new Mensaje("login",  login));
-            // servidor devuelve que?
+            // Mensaje de conexión
+            fout.writeObject(new Mensaje("conexion_cs", login));  // login aquí
+            Mensaje confirmacion = (Mensaje) fin.readObject();
+
+            System.out.println("Conexión establecida: " + confirmacion.getObject());
 
             while (true) {
                 System.out.printf("%s %% ", hostName);
@@ -75,17 +69,33 @@ public class OyenteServidor extends Thread {
                 // Tratamiento de mensajes del servidor
                 Mensaje answer = (Mensaje)fin.readObject();
                 switch(answer.getTipo()) {
-                    case "devolver":
-                        Entero e = (Entero)answer.getObject();
-                        System.out.println(e.get_valor());
+                    case "confirmacion_conexion_cs":
+                        break;
+                    case "respuesta_lista":
+                        break;
+                    case "emitir_cancion":
+                        // recibir IP y puerto de cliente
+                        (new ConexionCC(ConexionCC.Listen())).start();  // esto es bloqueante??
+                        fout.writeObject(new Mensaje("preparado_cs", s.getLocalSocketAddress()));
+                        break;
+                    case "preparado_sc":
+                        SocketAddress ipAddress = (SocketAddress) answer.getObject();
+
+                        var both = ipAddress.toString().split(":");
+                        (new ConexionCC(both[0], Integer.parseInt(both[1]))).start();
+                        break;
+                    case "desconexion_sc":
+                        System.out.println("Server disconnected.");
+                        // cerrar todos los recursos y terminar
                         break;
                     default:
+                        // mensaje desconocido
                         break;
                 }
             }
 
         } catch (Exception e) {
-            System.out.printf("Server unreachable: %s\n", e.getMessage());
+            System.err.printf("Server unreachable: %s\n", e.getMessage());
             System.exit(-1);
         }
     }

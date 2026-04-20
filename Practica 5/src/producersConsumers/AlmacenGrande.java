@@ -1,11 +1,9 @@
-package models.producersConsumers;
+package producersConsumers;
 
-import control.Controller;
-import control.ControllerSem;
 import util.Producto;
 
 public class AlmacenGrande implements Almacen {
-    private final Controller controller;
+    private final ProducerConsumerController controller;
 
     private final int N;
     private final Producto[] buffer;  // usado como buffer circular de tamaño N
@@ -27,8 +25,7 @@ public class AlmacenGrande implements Almacen {
             fin = (fin + 1) % N;
 
             controller.releaseProd();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
+        } catch (InterruptedException ignored) {
         }
     }
 
@@ -43,8 +40,7 @@ public class AlmacenGrande implements Almacen {
             ini = (ini + 1) % N;
 
             controller.releaseCons();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
+        } catch (InterruptedException ignored) {
         }
         return ret;
     }
