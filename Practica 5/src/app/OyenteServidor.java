@@ -5,7 +5,8 @@ import model.Mensaje;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.net.InetAddress;import java.net.Socket;
+import java.net.Socket;
+import java.net.SocketAddress;
 import java.util.Scanner;
 
 public class OyenteServidor extends Thread {
@@ -80,13 +81,13 @@ public class OyenteServidor extends Thread {
                     case "emitir_cancion":
                         // recibir IP y puerto de cliente
                         (new ConexionCC(ConexionCC.Listen())).start();  // esto es bloqueante??
-                        fout.writeObject(new Mensaje("preparado_cs", s.getLocalAddress()));
+                        fout.writeObject(new Mensaje("preparado_cs", s.getLocalSocketAddress()));
                         break;
                     case "preparado_sc":
-                        InetAddress ipAddress = (InetAddress)answer.getObject();
+                        SocketAddress ipAddress = (SocketAddress) answer.getObject();
 
-                        // magic number!!
-                        (new ConexionCC(ipAddress, 5000)).start();
+                        var both = ipAddress.toString().split(":");
+                        (new ConexionCC(both[0], Integer.parseInt(both[1]))).start();
                         break;
                     case "desconexion_sc":
                         System.out.println("Server disconnected.");

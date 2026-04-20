@@ -59,15 +59,16 @@ public class OyenteCliente extends Thread {
                     case "solicitud_cancion":
                         String cancion = (String) msg.getObject();
                         var usuario = almacen.getOwner(cancion);
+                        // acceso concurrente
                         var canal = canales.get(usuario);
                         canal.writeObject(new Mensaje("emitir_cancion"));
                         break;
                     case "preparado_cs":
                         // mensaje contiene IP, puerto destino de ambos
+                        var ip = (SocketAddress) msg.getObject();
                         // envia a c1
-                        String str = (String) msg.getObject();
-
-                        fout.writeObject(new Mensaje("devolver")); // del servidor
+                        var canal2 = canales.get(ip);
+                        canal2.writeObject(new Mensaje("preparado_sc", ip)); // del servidor
                         break;
                     case "desconexion_cs":
                         fout.close();

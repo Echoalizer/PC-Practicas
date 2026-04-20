@@ -5,7 +5,6 @@ import model.Mensaje;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 
@@ -35,7 +34,7 @@ public class ConexionCC extends Thread {
         }
     }
 
-    public ConexionCC(InetAddress address, int port) {
+    public ConexionCC(String address, int port) {
         try {
             socket = new Socket(address, port);
             cout = new ObjectOutputStream(socket.getOutputStream());

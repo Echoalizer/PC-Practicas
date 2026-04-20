@@ -18,7 +18,10 @@ public class Canales {
     }
 
     public ObjectOutputStream get(Usuario u) {
-        SocketAddress ip = u.getIpAddress();
+        return canales.get(u.getIpAddress());
+    }
+
+    public ObjectOutputStream get(SocketAddress ip) {
         return canales.get(ip);
     }
 
