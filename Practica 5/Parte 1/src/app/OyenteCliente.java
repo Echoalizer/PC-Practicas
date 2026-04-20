@@ -15,12 +15,13 @@ public class OyenteCliente extends Thread {
 
     OyenteCliente(Socket s) throws IOException {
         this.s = s;
-        name = "oyente@" + s.getInetAddress().toString();
+        name = "oyente@" + s.getInetAddress().getHostAddress() + ":" + s.getPort();
         try {
             fin = new ObjectInputStream(s.getInputStream());
-            fout = new ObjectOutputStream(s.getOutputStream());  // flush?
+            // Object streams normally (but not always) auto-flush
+            fout = new ObjectOutputStream(s.getOutputStream());
         } catch (IOException e) {
-            System.out.println("Read failed");
+            System.out.printf("Read failed: %s", e.getMessage());
             System.exit(-1);
         }
     }
@@ -28,29 +29,30 @@ public class OyenteCliente extends Thread {
     @Override
     public void run() {
         try {
-            while (true) {
-                Mensaje msg = (Mensaje)fin.readObject();
+            listen: while (true) {  // label used to break loop
+                Mensaje msg = (Mensaje) fin.readObject();
+                System.out.printf("%s %s\n", name, msg);
 
-                switch(msg.getTipo()) {
+                switch (msg.getTipo()) {
                     case "conexion":
                         fout.writeObject(new Mensaje("confirmacion_conexion"));
                         break;
                     case "pedir":
-                        String str = (String)msg.getObject();
-                        Entero k = new Entero (Integer.parseInt(str));
+                        String str = (String) msg.getObject();
+                        Entero k = new Entero(Integer.parseInt(str));
                         fout.writeObject(new Mensaje("devolver", k)); // del servidor
-//                        fout.flush();
                         break;
                     case "desconexion":
                         fout.close();
                         fin.close();
                         s.close();
-                        System.exit(0);
+                        break listen;
                 }
-                System.out.println(msg);
             }
-        } catch (Exception e) {
-            throw new RuntimeException(e);
+        } catch (EOFException e) {
+            System.out.printf("Client '%s' disconnected abruptly.\n", name);
+        } catch (IOException | ClassNotFoundException e) {
+            System.out.printf("Client '%s' ended with error: %s\n", name, e.getMessage());
         }
     }
 }

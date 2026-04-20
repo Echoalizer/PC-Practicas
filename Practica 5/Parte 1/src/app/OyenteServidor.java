@@ -10,21 +10,22 @@ import java.net.Socket;
 import java.util.Scanner;
 
 public class OyenteServidor extends Thread {
-    private final String name;
+    private final String hostName;
+
     private final Socket s;
 
-    private ObjectOutputStream fout;
-    private ObjectInputStream fin;
+    private final ObjectOutputStream fout;
+    private final ObjectInputStream fin;
 
     OyenteServidor(Socket s) throws IOException {
         this.s = s;
-        name = "server@" + s.getInetAddress().toString();
+        hostName = "server@" + s.getInetAddress().getHostAddress();
         try {
-            fout = new ObjectOutputStream(s.getOutputStream());  // flush?
+            fout = new ObjectOutputStream(s.getOutputStream());
             fin = new ObjectInputStream(s.getInputStream());
         } catch (IOException e) {
-            System.out.println("Read failed");
-            System.exit(-1);
+            System.out.println("Could not create channel: " + e.getMessage());
+            throw e;
         }
     }
 
@@ -34,28 +35,25 @@ public class OyenteServidor extends Thread {
             System.out.printf("open at %s:%d\n", s.getLocalAddress(), s.getLocalPort());
             System.out.printf("connected to %s:%d\n", s.getInetAddress(), s.getPort());
 
-            String host = s.getInetAddress().toString();
-
-
             fout.writeObject(new Mensaje("conexion"));
             Mensaje confirmacion = (Mensaje)fin.readObject();
             System.out.println(confirmacion.getTipo());
 
-            Scanner reader = new Scanner(System.in); // Reading from System.in
+            Scanner reader = new Scanner(System.in);
 
             while (true) {
-                System.out.printf("%s %% ", host);
-                String msg = reader.nextLine();
+                System.out.printf("%s %% ", hostName);
+                String[] msgs = reader.nextLine().split(" ");
+                String msg = msgs[0], dato = null;
 
-                String dato = null;
-                if (msg.equals("pedir"))
-                    dato = reader.nextLine();
+                if (msgs.length > 1)
+                    dato = msgs[1];
 
-                Mensaje command = dato != null
-                        ? new Mensaje(msg, dato)
-                        : new Mensaje(msg);
+                // Envío de mensajes
+                Mensaje command = new Mensaje(msg, dato);
 
                 fout.writeObject(command);
+
                 if (command.getTipo().equals("desconexion")) {
                     reader.close();
                     fout.close();
@@ -64,6 +62,7 @@ public class OyenteServidor extends Thread {
                     System.exit(0);
                 }
 
+                // Tratamiento de mensajes del servidor
                 Mensaje answer = (Mensaje)fin.readObject();
                 switch(answer.getTipo()) {
                     case "devolver":
@@ -76,7 +75,8 @@ public class OyenteServidor extends Thread {
             }
 
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            System.out.printf("Server unreachable: %s\n", e.getMessage());
+            System.exit(-1);
         }
     }
 }

@@ -23,4 +23,8 @@ public class Mensaje implements Serializable {
         return o;
     }
 
+    @Override
+    public String toString() {
+        return tipo + (o != null ? ": " + o : "");
+    }
 }
