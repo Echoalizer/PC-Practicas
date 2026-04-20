@@ -2,6 +2,8 @@ package model;
 
 import java.io.Serializable;
 
+//public static final String CONEXION = "conexion";
+
 public class Mensaje implements Serializable {
     private final String tipo;
     private Object o;

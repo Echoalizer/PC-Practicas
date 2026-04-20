@@ -2,6 +2,7 @@ package app;
 
 import model.Entero;
 import model.Mensaje;
+import model.Usuario;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -19,6 +20,8 @@ public class OyenteServidor extends Thread {
 
     OyenteServidor(Socket s) throws IOException {
         this.s = s;
+        System.out.printf("open at %s:%d\n", s.getLocalAddress(), s.getLocalPort());
+        System.out.printf("connected to %s:%d\n", s.getInetAddress(), s.getPort());
         hostName = "server@" + s.getInetAddress().getHostAddress();
         try {
             fout = new ObjectOutputStream(s.getOutputStream());
@@ -32,14 +35,21 @@ public class OyenteServidor extends Thread {
     @Override
     public void run() {
         try {
-            System.out.printf("open at %s:%d\n", s.getLocalAddress(), s.getLocalPort());
-            System.out.printf("connected to %s:%d\n", s.getInetAddress(), s.getPort());
-
+            // Mensaje de conexión
             fout.writeObject(new Mensaje("conexion"));
             Mensaje confirmacion = (Mensaje)fin.readObject();
-            System.out.println(confirmacion.getTipo());
+
+            System.out.println("Conexión establecida: " + confirmacion.getObject());
 
             Scanner reader = new Scanner(System.in);
+
+            // login
+            System.out.println("login: ");
+            String login = reader.nextLine();
+
+            // buscar nombre en server o añadir
+            fout.writeObject(new Mensaje("login",  login));
+            // servidor devuelve que?
 
             while (true) {
                 System.out.printf("%s %% ", hostName);
