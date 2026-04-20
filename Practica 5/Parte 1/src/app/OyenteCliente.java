@@ -4,18 +4,26 @@ import model.Entero;
 import model.Mensaje;
 
 import java.io.*;
+import java.net.InetAddress;
 import java.net.Socket;
 
 public class OyenteCliente extends Thread {
     private final String name;
+    private final InetAddress clientIpAddress;
     private final Socket s;
+
+    private final Almacen almacen;
+    private final Canales canales;
 
     private ObjectOutputStream fout;
     private ObjectInputStream fin;
 
-    OyenteCliente(Socket s) throws IOException {
+    OyenteCliente(Socket s, Almacen al, Canales c) throws IOException {
         this.s = s;
-        name = "oyente@" + s.getInetAddress().getHostAddress() + ":" + s.getPort();
+        this.almacen = al;
+        this.canales = c;
+        this.clientIpAddress = s.getInetAddress();
+        name = "oyente@" + clientIpAddress.getHostAddress() + ":" + s.getPort();
         try {
             fin = new ObjectInputStream(s.getInputStream());
             // Object streams normally (but not always) auto-flush
@@ -34,21 +42,28 @@ public class OyenteCliente extends Thread {
                 System.out.printf("%s %s\n", name, msg);
 
                 switch (msg.getTipo()) {
-                    case "conexion":
+                    case "conexion_cs":
+                        String userId = (String) msg.getObject();
+                        almacen.postUser(userId, clientIpAddress);
                         fout.writeObject(new Mensaje("confirmacion_conexion"));
                         break;
-                    case "login":
-                        String user = (String) msg.getObject();
-                        // is user not in users
-                            // add
-                        // else
-                            // save ip; set alive to true
-                    case "pedir":
+                    case "solicitud_lista":
+                        fout.writeObject(new Mensaje("respuesta_lista", almacen.getLista()));
+                        break;
+                    case "solicitud_cancion":
+                        String cancion = (String) msg.getObject();
+                        var usuario = almacen.getOwner(cancion);
+                        var canal = canales.get(usuario);
+                        canal.writeObject(new Mensaje("emitir_cancion"));
+                        break;
+                    case "preparado_cs":
+                        // mensaje contiene IP, puerto destino de ambos
+                        // envia a c1
                         String str = (String) msg.getObject();
                         Entero k = new Entero(Integer.parseInt(str));
                         fout.writeObject(new Mensaje("devolver", k)); // del servidor
                         break;
-                    case "desconexion":
+                    case "desconexion_cs":
                         fout.close();
                         fin.close();
                         s.close();

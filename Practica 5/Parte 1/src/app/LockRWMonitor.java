@@ -1,4 +1,4 @@
-package RW;
+package app;
 
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;

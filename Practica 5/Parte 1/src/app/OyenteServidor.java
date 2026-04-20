@@ -36,7 +36,7 @@ public class OyenteServidor extends Thread {
     public void run() {
         try {
             // Mensaje de conexión
-            fout.writeObject(new Mensaje("conexion"));
+            fout.writeObject(new Mensaje("conexion"));  // login aquí
             Mensaje confirmacion = (Mensaje)fin.readObject();
 
             System.out.println("Conexión establecida: " + confirmacion.getObject());

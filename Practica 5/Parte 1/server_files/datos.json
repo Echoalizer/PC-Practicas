@@ -1,16 +1,80 @@
 {
   "users": [
     {
-      "id": "marta"
+      "id": "marta",
+      "songs": [
+        {
+          "title": "Midnight Echo",
+          "artist": "Neon Rivers",
+          "isBand": true,
+          "date": "2024-03-18",
+          "duration": 212
+        },
+        {
+          "title": "Golden Skies",
+          "artist": "Lena Hart",
+          "isBand": false,
+          "date": "2023-11-07",
+          "duration": 189
+        }
+      ]
     },
     {
-      "id": "sebas"
+      "id": "sebas",
+      "songs": [
+        {
+          "title": "City Lights",
+          "artist": "The Hollow Notes",
+          "isBand": true,
+          "date": "2024-01-22",
+          "duration": 241
+        },
+        {
+          "title": "After the Rain",
+          "artist": "Maya Stone",
+          "isBand": false,
+          "date": "2022-09-14",
+          "duration": 198
+        }
+      ]
     },
     {
-      "id": "guille"
+      "id": "guille",
+      "songs": [
+        {
+          "title": "Static Dreams",
+          "artist": "Velvet Circuit",
+          "isBand": true,
+          "date": "2023-05-30",
+          "duration": 225
+        },
+        {
+          "title": "Blue Horizon",
+          "artist": "Nora Vale",
+          "isBand": false,
+          "date": "2024-06-10",
+          "duration": 204
+        }
+      ]
     },
     {
-      "id": "los_demas"
+      "id": "los_demas",
+      "songs": [
+        {
+          "title": "Wildfire",
+          "artist": "The Paper Suns",
+          "isBand": true,
+          "date": "2021-12-03",
+          "duration": 233
+        },
+        {
+          "title": "Soft Collision",
+          "artist": "Iris Moon",
+          "isBand": false,
+          "date": "2024-02-28",
+          "duration": 176
+        }
+      ]
     }
   ]
 }
