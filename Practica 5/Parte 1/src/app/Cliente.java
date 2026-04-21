@@ -7,7 +7,7 @@ import java.net.UnknownHostException;
 
 public class Cliente {
 
-    public static void main (String[] args) {
+    public static void main(String[] args) {
         String IP = args[0];
         int port = Integer.parseInt(args[1]);
 

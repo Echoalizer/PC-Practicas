@@ -32,7 +32,8 @@ public class OyenteCliente extends Thread {
     @Override
     public void run() {
         try {
-            listen: while (true) {  // label used to break loop
+            listen:
+            while (true) {  // label used to break loop
                 Mensaje msg = (Mensaje) fin.readObject();
                 System.out.printf("%s %s\n", name, msg);
 

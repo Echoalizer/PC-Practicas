@@ -3,7 +3,7 @@ package RW;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 
-public class LockRWMonitor implements RW{
+public class LockRWMonitor implements RW {
 	private final ReentrantLock l;
 	private final Condition okToRead;
 	private final Condition okToWrite;

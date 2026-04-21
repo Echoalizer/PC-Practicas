@@ -8,9 +8,9 @@ import java.net.Socket;
 public class Servidor {
     private static final int DEFAULT_PORT = 9000;
 
-    public static void main (String[] args) {
+    public static void main(String[] args) {
         int puerto = DEFAULT_PORT;
-        if  (args.length > 0)
+        if (args.length > 0)
             puerto = Integer.parseInt(args[0]);
 
         try (ServerSocket listen = new ServerSocket(puerto)) {
