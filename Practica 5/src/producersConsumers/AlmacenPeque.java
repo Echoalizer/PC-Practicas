@@ -1,4 +1,4 @@
-package models.producersConsumers;
+package producersConsumers;
 
 import util.Producto;
 
@@ -14,8 +14,7 @@ public class AlmacenPeque implements Almacen {
         try {
             empty.acquire();
             buffer[0] = producto;
-        } catch (InterruptedException e) {
-            e.printStackTrace();
+        } catch (InterruptedException ignored) {
         } finally {
             full.release();
         }
@@ -28,8 +27,7 @@ public class AlmacenPeque implements Almacen {
             full.acquire();
             ret = buffer[0];  // null si estuviera vacío
             buffer[0] = null;
-        } catch (InterruptedException e) {
-            e.printStackTrace();
+        } catch (InterruptedException ignored) {
         } finally {
 //            System.out.println(ret);
             empty.release();

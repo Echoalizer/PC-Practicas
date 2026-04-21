@@ -1,4 +1,4 @@
-package models.producersConsumers;
+package producersConsumers;
 
 import util.Producto;
 
@@ -17,7 +17,10 @@ public class Productor extends Thread {
     public void run() {
         for (int i = 0; i < iteraciones; i++) {
             Producto p = new Producto(id, i);
-            al.almacenar(p);
+            try {
+                al.almacenar(p);
+            } catch (InterruptedException ignored) {
+            }
         }
     }
 }

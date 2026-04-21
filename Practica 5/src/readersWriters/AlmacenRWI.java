@@ -1,4 +1,4 @@
-package models.readersWriters;
+package readersWriters;
 
 import util.Producto;
 
