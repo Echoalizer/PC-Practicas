@@ -1,0 +1,10 @@
+package mensajes;
+
+public enum tipoMensaje {
+
+	CONEXION,
+	CONFIRMACION_CONEXION,
+	DESCONEXION_CLIENTE,
+	CONFIRMACION_DESCONEXION_CLIENTE
+
+}
