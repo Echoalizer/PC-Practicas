@@ -8,14 +8,14 @@ public abstract class Mensaje implements Serializable{
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
-	private tipoMensaje tipoMensaje;
-	
-	public Mensaje(tipoMensaje msg) {
-		this.tipoMensaje = msg;
+	private TipoMensaje TipoMensaje;
+
+	public Mensaje(TipoMensaje msg) {
+		this.TipoMensaje = msg;
 	}
-	
-	public tipoMensaje getTipo() {
-		return this.tipoMensaje;
+
+	public TipoMensaje getTipo() {
+		return this.TipoMensaje;
 	}
 	
 }
