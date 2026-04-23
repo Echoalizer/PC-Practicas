@@ -1,6 +1,8 @@
 package servidor;
 
-import utils.Musica;
+import locks.LockId;
+import locks.LockTicket;
+import utils.Cancion;
 import utils.Usuario;
 
 import java.io.IOException;
@@ -14,83 +16,72 @@ import java.util.Scanner;
 public class Servidor {
 
     private final int puerto;
+    private final ServerSocket s;
 
-    private final Socket s;
-    private ObjectOutputStream fout;
-    private ObjectInputStream fin;
+    private final LockId oyenteLock;
 
-    private Scanner in;
+    private final ListaConcurrente<Usuario> usuarios;
+    private final ListaConcurrente<Cancion> canciones;
+    private final MapaCancionesUsuarios canciones_por_usuario;
 
-    private ListaConcurrente<Usuario> usuarios;
-    private ListaConcurrente<Musica> canciones;
-    private MapaCancionesUsuarios canciones_por_usuario;
-
-
-    public Servidor(int puerto, Socket s, ObjectOutputStream fout, ObjectInputStream fin, Scanner in) {
+    public Servidor(int puerto, ServerSocket s) {
         this.puerto = puerto;
         this.s = s;
-        this.fout = fout;
-        this.fin = fin;
-        this.in = in;
+
+        this.usuarios = new ListaConcurrente<>();
+        this.canciones = new ListaConcurrente<>();
+        this.canciones_por_usuario = new MapaCancionesUsuarios();
+
+        this.oyenteLock = new LockTicket(100);  //! magic number
+    }
+
+    public void run() throws IOException {
+
+        Socket ss = null;
+        int k = 0;
+        while (true) {
+            ss = s.accept();
+            k++;
+
+            ObjectInputStream fin = null;
+            ObjectOutputStream fout = null;
+
+            try {
+                fout = new ObjectOutputStream(ss.getOutputStream());
+                fin = new ObjectInputStream(ss.getInputStream());
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+            try {
+                OyenteCliente oyente = new OyenteCliente(ss, k, fout, fin,
+                        usuarios, canciones, canciones_por_usuario, oyenteLock
+                );
+                oyente.start();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+        }
     }
 
     public static void main(String[] args) {
 
         Scanner in = new Scanner(System.in);
-        //System.out.println("Introduce el puerto del servidor");
-        //int puertoServidor = Integer.parseInt(in.nextLine());
 
-        ServerSocket listen = null;
-        Socket ss = null;
-        try {
-            listen = new ServerSocket(99);
-            ss = listen.accept();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        System.out.println("Introduce el puerto del servidor");
+        int puertoServidor = Integer.parseInt(in.nextLine());
 
-        ObjectInputStream fin = null;
-        ObjectOutputStream fout = null;
-
+        in.close();
 
         try {
-            fout = new ObjectOutputStream(ss.getOutputStream());
-            fin = new ObjectInputStream(ss.getInputStream());
+            ServerSocket listen = new ServerSocket(puertoServidor);
+            Servidor servidor = new Servidor(puertoServidor, listen);
+            System.out.println("El servidor se ha creado correctamente");
+            servidor.run();
         } catch (IOException e) {
-            e.printStackTrace();
+            throw new RuntimeException(e);
         }
-
-        Servidor server = new Servidor(99, ss, fout, fin, in);
-        OyenteCliente oyente = null;
-
-
-        try {
-            oyente = new OyenteCliente(ss, "OC1", fout, fin);
-        } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-
-        oyente.start();
-        server.run();
-
-
-    }
-
-    public void run() {
-
-        System.out.println("El servidor se ha creado correctamente");
-
-
-        try {
-            fin.close();
-            fout.close();
-            s.close();
-            in.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
     }
 
 }

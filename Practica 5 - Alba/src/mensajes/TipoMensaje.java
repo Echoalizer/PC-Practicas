@@ -12,6 +12,4 @@ public enum TipoMensaje {
 	SOLICITUD_LISTA_CANCIONES,
 	RESPUESTA_LISTA_CANCIONES,
 
-
-
 }

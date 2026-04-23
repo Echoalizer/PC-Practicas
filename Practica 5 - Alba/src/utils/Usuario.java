@@ -2,11 +2,12 @@ package utils;
 
 import java.io.Serializable;
 import java.util.Set;
+import java.util.TreeSet;
 
 public class Usuario implements Serializable {
     String username;
     String ip;
-    Set<Musica> canciones;
+    Set<Cancion> canciones;
 
     public Usuario(String username, String ip) {
         this.username = username;
@@ -15,5 +16,15 @@ public class Usuario implements Serializable {
         this.canciones = new TreeSet<>();
     }
 
+    @Override
+    public int hashCode() {
 
+        return 0;
+    }
+
+
+    @Override
+    public boolean equals(Object obj) {
+        return this.username.equals(((Usuario) obj).username);
+    }
 }

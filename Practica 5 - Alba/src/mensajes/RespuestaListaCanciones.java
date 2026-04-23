@@ -1,19 +1,19 @@
 package mensajes;
 
-import utils.Musica;
+import utils.Cancion;
 
 import java.util.Set;
 
 public class RespuestaListaCanciones extends Mensaje {
 
-    private Set<Musica> lista;
+    private Set<Cancion> lista;
 
-    public RespuestaListaCanciones(Set<Musica> lista) {
+    public RespuestaListaCanciones(Set<Cancion> lista) {
         super(TipoMensaje.RESPUESTA_LISTA_CANCIONES);
         this.lista = lista;
     }
 
-    public Set<Musica> getLista() {
+    public Set<Cancion> getLista() {
         return lista;
     }
 

@@ -5,6 +5,9 @@ import readersWriters.LockRWMonitor;
 import readersWriters.ReadWriteController;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 
@@ -13,35 +16,50 @@ public class ListaConcurrente<T extends Serializable> implements AlmacenRWI<T> {
     private final ReadWriteController controller;
     private final Set<T> valores;
 
-    public ListaConcurrente(Set<T> valores) {
+    public ListaConcurrente() {
         controller = new LockRWMonitor();
-        this.valores = valores;
+        valores = new HashSet<>();
     }
 
     @Override
-    public boolean escribir(T valor, int pos) {
-        boolean ok = false;
+    public boolean escribir(T value, String key) throws InterruptedException {
+        boolean insertado = false;
         try {
             controller.request_write();
-            ok = valores.add(valor);
+            insertado = valores.add(value);
             controller.release_write();
         } catch (InterruptedException e) {
-            // TODO catch block
+            throw new InterruptedException("No se ha podido escribir el valor.");
         }
 
-        return ok;
+        return insertado;
     }
 
     @Override
-    public T leer(int pos) {
-        T valor = null;
+    public boolean borrar(T value) throws InterruptedException {
+        boolean borrado = false;
+        try {
+            controller.request_write();
+            borrado = valores.remove(value);
+            controller.release_write();
+        } catch (InterruptedException e) {
+            throw new InterruptedException("No se ha podido borrar el valor.");
+        }
+
+        return borrado;
+    }
+
+    @Override
+    public List<T> leerLista() throws InterruptedException {
+        List<T> lista;
         try {
             controller.request_read();
-//            valor = valores
+            lista = new ArrayList<>(valores);
             controller.release_read();
         } catch (InterruptedException e) {
-            // TODO catch block
+            throw new InterruptedException("No se ha podido leer el valor.");
         }
-        return valor;
+
+        return lista;
     }
 }
