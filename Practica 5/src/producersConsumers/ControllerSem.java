@@ -1,8 +1,8 @@
-package control;
+package producersConsumers;
 
 import java.util.concurrent.Semaphore;
 
-public class ControllerSem implements Controller {
+public class ControllerSem implements ProducerConsumerController {
 
     private final Semaphore empty;
     private final Semaphore full = new Semaphore(0);
