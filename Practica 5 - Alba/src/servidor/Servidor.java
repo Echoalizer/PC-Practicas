@@ -2,6 +2,7 @@ package servidor;
 
 import locks.LockId;
 import locks.LockTicket;
+import mensajes.Mensaje;
 import utils.Cancion;
 import utils.Usuario;
 
@@ -18,11 +19,15 @@ public class Servidor {
     private final int puerto;
     private final ServerSocket s;
 
+    // este era para la consola, usar LockTicket en oyenteServidor
     private final LockId oyenteLock;
+//    private final LockId socketLock;
 
     private final ListaConcurrente<Usuario> usuarios;
     private final ListaConcurrente<Cancion> canciones;
     private final MapaCancionesUsuarios canciones_por_usuario;
+
+//    private final Map<Usuario, ObjectOutputStream> canales;
 
     public Servidor(int puerto, ServerSocket s) {
         this.puerto = puerto;
@@ -32,7 +37,7 @@ public class Servidor {
         this.canciones = new ListaConcurrente<>();
         this.canciones_por_usuario = new MapaCancionesUsuarios();
 
-        this.oyenteLock = new LockTicket(100);  //! magic number
+        this.oyenteLock = new LockTicket();
     }
 
     public void run() throws IOException {
@@ -54,15 +59,33 @@ public class Servidor {
             }
 
             try {
-                OyenteCliente oyente = new OyenteCliente(ss, k, fout, fin,
-                        usuarios, canciones, canciones_por_usuario, oyenteLock
-                );
+                OyenteCliente oyente = new OyenteCliente(ss, k, fout, fin, this, oyenteLock);
                 oyente.start();
             } catch (IOException e) {
                 e.printStackTrace();
             }
 
         }
+    }
+
+    public void enviar(Usuario user, Mensaje mensaje) {
+        // mover a oyenteCliente
+//        var fout = this.canales.get(user);
+//        socketLock.takeLock(0);
+//        fout.println(mensaje);
+//        socketLock.releaseLock(0);
+    }
+
+    public ListaConcurrente<Usuario> getUsuarios() {
+        return this.usuarios;
+    }
+
+    public ListaConcurrente<Cancion> getCanciones() {
+        return this.canciones;
+    }
+
+    public Usuario getUsuarioCancion(String cancion) throws InterruptedException {
+        return this.canciones_por_usuario.leer(cancion);
     }
 
     public static void main(String[] args) {

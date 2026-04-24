@@ -1,10 +1,12 @@
 import locks.LockTicket;
-import util.*;
+import util.Entero;
+import util.ThreadWithLock;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import static util.Constants.*;
+import static util.Constants.ITERATIONS;
+import static util.Constants.PROCESSES;
 
 class LockTicketTest {
 
@@ -12,7 +14,7 @@ class LockTicketTest {
 
         Entero k = new Entero(0);
         List<Thread> threads = new ArrayList<>();
-        LockTicket lock = new LockTicket(2 * PROCESSES);
+        LockTicket lock = new LockTicket();
 
         // Creamos M procesos que incrementan y M que decrementan
         System.out.printf("Lanzando %d procesos de cada tipo...", PROCESSES);

@@ -1,5 +1,7 @@
 package cliente;
 
+import locks.LockId;
+import locks.LockTicket;
 import mensajes.Mensaje;
 import mensajes.TipoMensaje;
 
@@ -14,6 +16,9 @@ public class OyenteServidor extends Thread {
     private ObjectOutputStream fout;
     private boolean conectado;
 
+    // para controlar accceso a los canales de oyenteServidor y emisor
+    private LockId socketLock;
+
     // Hace throws IOException ya que si hay algun error, el compilador directamente no crea el objeto
     public OyenteServidor(String name, ObjectOutputStream fout, ObjectInputStream fin) throws IOException {
         this.name = name;
@@ -21,6 +26,7 @@ public class OyenteServidor extends Thread {
         this.fout = fout;
 
         this.conectado = true;
+        this.socketLock = new LockTicket();
     }
 
 

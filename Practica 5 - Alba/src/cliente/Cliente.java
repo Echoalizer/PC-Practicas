@@ -1,5 +1,7 @@
 package cliente;
 
+import locks.LockId;
+import locks.LockTicket;
 import mensajes.Conexion;
 import mensajes.DesconexionCliente;
 
@@ -11,11 +13,13 @@ import java.util.Scanner;
 
 public class Cliente {
 
-
     private final String IP;
     private final int puerto;
 
     private final Socket s;
+
+    private final LockId oyenteLock;
+
     private ObjectOutputStream fout;
     private ObjectInputStream fin;
 
@@ -31,10 +35,13 @@ public class Cliente {
         this.fin = fin;
         this.in = in;
         this.oyente = oyente;
+
+        // lock para la terminal
+        this.oyenteLock = new LockTicket();
     }
 
 
-    public static void main(String args[]) {
+    public static void main(String[] args) {
 
         //Hay que crear el nuevo cliente -> Por lo que hay que pedir su info y crear el oyenteServidor
         Scanner in = new Scanner(System.in);
@@ -67,7 +74,7 @@ public class Cliente {
         OyenteServidor oyente = null;
 
         try {
-            oyente = new OyenteServidor("OS1", fout, fin);
+            oyente = new OyenteServidor(fout, fin, oyenteLock);
         } catch (IOException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
