@@ -2,10 +2,10 @@ package mensajes;
 
 import java.io.Serializable;
 
-public class SolicitudListaUsuarios extends Mensaje {
+public class DesconexionServidor extends Mensaje {
 
-    public SolicitudListaUsuarios(String sender, String receiver) {
-        super(TipoMensaje.SOLICITUD_LISTA_USUARIOS, sender, receiver);
+    public DesconexionServidor(String sender, String receiver) {
+        super(TipoMensaje.DESCONEXION_SC, sender, receiver);
     }
 
     @Override

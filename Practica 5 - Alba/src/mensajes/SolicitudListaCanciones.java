@@ -1,12 +1,16 @@
 package mensajes;
 
+import java.io.Serializable;
+
 public class SolicitudListaCanciones extends Mensaje {
-    public SolicitudListaCanciones() {
-        super(TipoMensaje.SOLICITUD_LISTA_CANCIONES);
+
+    public SolicitudListaCanciones(String sender, String receiver) {
+        super(TipoMensaje.SOLICITUD_LISTA_CANCIONES, sender, receiver);
     }
 
     @Override
-    public TipoMensaje getTipo() {
-        return TipoMensaje.SOLICITUD_LISTA_CANCIONES;
+    public Serializable getContent() {
+        throw new UnsupportedOperationException("Este tipo de mensaje no tiene contenido");
     }
+
 }

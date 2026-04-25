@@ -2,10 +2,10 @@ package mensajes;
 
 import java.io.Serializable;
 
-public class SolicitudListaUsuarios extends Mensaje {
+public class PreparadoSC extends Mensaje {
 
-    public SolicitudListaUsuarios(String sender, String receiver) {
-        super(TipoMensaje.SOLICITUD_LISTA_USUARIOS, sender, receiver);
+    public PreparadoSC(String sender, String receiver) {
+        super(TipoMensaje.PREPARADO_SC, sender, receiver);
     }
 
     @Override
