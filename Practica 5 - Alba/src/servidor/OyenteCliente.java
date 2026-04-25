@@ -2,7 +2,6 @@ package servidor;
 
 import locks.LockId;
 import mensajes.ConfirmacionConexion;
-import mensajes.ConfirmacionDesconexionCliente;
 import mensajes.Mensaje;
 import mensajes.TipoMensaje;
 import utils.Usuario;
@@ -52,7 +51,7 @@ public class OyenteCliente extends Thread {
                 TipoMensaje tipo = msg.getTipo();
 
                 switch (tipo) {
-                    case CONEXION:
+                    case CONEXION_CS:
                         // productor-consumidor para la consola
                         logLock.takeLock(0);
                         System.out.println("Se ha establecido conexion con el cliente");
@@ -62,7 +61,7 @@ public class OyenteCliente extends Thread {
                         fout.writeObject(new ConfirmacionConexion());
                         break;
 
-                    case DESCONEXION_CLIENTE:
+                    case DESCONEXION_CS:
                         logLock.takeLock(0);
                         System.out.println("Se va a desconectar el cliente");
                         logLock.releaseLock(0);

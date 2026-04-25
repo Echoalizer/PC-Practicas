@@ -38,30 +38,22 @@ public class Servidor {
     }
 
     public void run() throws IOException {
-
-        Socket ss = null;
+        Socket ss;
         int k = 0;
         while (true) {
-            ss = s.accept();
+            ss = srvSocket.accept();
             k++;
 
-            ObjectInputStream fin = null;
-            ObjectOutputStream fout = null;
-
             try {
-                fout = new ObjectOutputStream(ss.getOutputStream());
-                fin = new ObjectInputStream(ss.getInputStream());
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+                ObjectOutputStream fout = new ObjectOutputStream(ss.getOutputStream());
+                ObjectInputStream fin = new ObjectInputStream(ss.getInputStream());
 
-            try {
                 OyenteCliente oyente = new OyenteCliente(ss, k, fout, fin, this, oyenteLock);
+
                 oyente.start();
             } catch (IOException e) {
-                e.printStackTrace();
+                System.err.printf("Error al conectar con el cliente: %s\n", e.getMessage());
             }
-
         }
     }
 
@@ -89,15 +81,21 @@ public class Servidor {
 
         Scanner in = new Scanner(System.in);
 
-        System.out.println("Introduce el puerto del servidor");
-        int puertoServidor = Integer.parseInt(in.nextLine());
+        int puertoServidor;
+        if (args.length > 0)
+            puertoServidor = Integer.parseInt(args[0]);
+        else {
+            System.out.print("Introduce el puerto del servidor: ");
+            puertoServidor = Integer.parseInt(in.nextLine());
+        }
 
         in.close();
 
         try {
-            ServerSocket listen = new ServerSocket(puertoServidor);
-            Servidor servidor = new Servidor(puertoServidor, listen);
-            System.out.println("El servidor se ha creado correctamente");
+            ServerSocket listen = new ServerSocket(puertoServidor);  // nunca se cierra
+            Servidor servidor = new Servidor(listen);
+            // proteger con lock
+            System.out.println("El servidor se ha creado correctamente.");
             servidor.run();
         } catch (IOException e) {
             throw new RuntimeException(e);
