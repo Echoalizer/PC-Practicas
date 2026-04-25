@@ -16,22 +16,19 @@ import java.util.Scanner;
 
 public class Servidor {
 
-    private final int puerto;
-    private final ServerSocket s;
-
-    // este era para la consola, usar LockTicket en oyenteServidor
-    private final LockId oyenteLock;
-//    private final LockId socketLock;
+    private final ServerSocket srvSocket;
 
     private final ListaConcurrente<Usuario> usuarios;
     private final ListaConcurrente<Cancion> canciones;
     private final MapaCancionesUsuarios canciones_por_usuario;
 
+    // este era para la consola, usar LockTicket en oyenteServidor
+    private final LockId oyenteLock;
+
 //    private final Map<Usuario, ObjectOutputStream> canales;
 
-    public Servidor(int puerto, ServerSocket s) {
-        this.puerto = puerto;
-        this.s = s;
+    public Servidor(ServerSocket s) {
+        this.srvSocket = s;
 
         this.usuarios = new ListaConcurrente<>();
         this.canciones = new ListaConcurrente<>();

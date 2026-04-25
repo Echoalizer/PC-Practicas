@@ -25,14 +25,13 @@ public class OyenteCliente extends Thread {
 
     private final LockId logLock;
 
-    // Hace throws IOException ya que si hay algun error, el compilador directamente no crea el objeto
+    // throws IOException ya que si hay algún error, directamente no se crea el objeto
     public OyenteCliente(Socket s, int id, ObjectOutputStream fout, ObjectInputStream fin,
                          Servidor servidor, LockId lock
     ) throws IOException {
         this.id = id;
         this.name = "OC" + id;
         this.s = s;
-        System.out.println("Se ha conectado el servidor");
         this.fin = fin;
         this.fout = fout;
 
@@ -59,6 +58,7 @@ public class OyenteCliente extends Thread {
                         System.out.println("Se ha establecido conexion con el cliente");
                         logLock.releaseLock(0);
 
+                        // hay que añadir emisor y receptor al mensaje
                         fout.writeObject(new ConfirmacionConexion());
                         break;
 
@@ -66,8 +66,7 @@ public class OyenteCliente extends Thread {
                         logLock.takeLock(0);
                         System.out.println("Se va a desconectar el cliente");
                         logLock.releaseLock(0);
-
-                        fout.writeObject(new ConfirmacionDesconexionCliente());
+                        // cerrar los canales correspondientes
                         break;
 
                     case RESPUESTA_LISTA_USUARIOS:

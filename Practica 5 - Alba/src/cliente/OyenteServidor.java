@@ -11,24 +11,21 @@ import java.io.ObjectOutputStream;
 
 public class OyenteServidor extends Thread {
 
-    private final String name;
+    private int id;
+    private String name;
     private ObjectInputStream fin;
     private ObjectOutputStream fout;
-    private boolean conectado;
 
     // para controlar accceso a los canales de oyenteServidor y emisor
     private LockId socketLock;
 
     // Hace throws IOException ya que si hay algun error, el compilador directamente no crea el objeto
-    public OyenteServidor(String name, ObjectOutputStream fout, ObjectInputStream fin) throws IOException {
-        this.name = name;
+    public OyenteServidor(ObjectOutputStream fout, ObjectInputStream fin) throws IOException {
         this.fin = fin;
         this.fout = fout;
 
-        this.conectado = true;
         this.socketLock = new LockTicket();
     }
-
 
     @Override
     public void run() {
@@ -44,10 +41,6 @@ public class OyenteServidor extends Thread {
                     case CONFIRMACION_CONEXION:
                         System.out.println("Se ha establecido conexion con el servidor");
                         break;
-                    case CONFIRMACION_DESCONEXION_CLIENTE:
-                        System.out.println("Se ha desconectado al cliente");
-                        this.conectado = false;
-                        break;
                     default:
                         break;
                 }
@@ -58,12 +51,5 @@ public class OyenteServidor extends Thread {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
-
     }
-
-
-    public boolean getDesconectado() {
-        return this.conectado;
-    }
-
 }

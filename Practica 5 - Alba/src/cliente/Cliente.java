@@ -12,53 +12,58 @@ import java.net.Socket;
 import java.util.Scanner;
 
 public class Cliente {
-
-    private final String IP;
-    private final int puerto;
-
     private final Socket s;
+
+    private final Scanner in;
 
     private final LockId oyenteLock;
 
-    private ObjectOutputStream fout;
-    private ObjectInputStream fin;
+    private final ObjectOutputStream fout;
+    private final ObjectInputStream fin;
 
-    private OyenteServidor oyente;
-
-    private Scanner in;
-
-    public Cliente(int puerto, String IP, Socket s, ObjectOutputStream fout, ObjectInputStream fin, Scanner in, OyenteServidor oyente) {
-        this.puerto = puerto;
-        this.IP = IP;
+    public Cliente(Socket s, ObjectOutputStream fout, ObjectInputStream fin) {
         this.s = s;
         this.fout = fout;
         this.fin = fin;
-        this.in = in;
-        this.oyente = oyente;
+
+        this.in = new Scanner(System.in);
 
         // lock para la terminal
         this.oyenteLock = new LockTicket();
     }
 
-
+    // main
     public static void main(String[] args) {
 
-        //Hay que crear el nuevo cliente -> Por lo que hay que pedir su info y crear el oyenteServidor
         Scanner in = new Scanner(System.in);
-        //System.out.println("Introduce el puerto del servidor");
-        //int puertoServidor = Integer.parseInt(in.nextLine());
 
-        //System.out.println("Introduce la IP del cliente");
-        String IPCliente = "localhost";
+        String IPServidor;
+        int puertoServidor;
 
-        Socket s = null;
+        // Hay que crear el nuevo cliente -> Por lo que hay que pedir su info y crear el oyenteServidor
+        if (args.length > 0) {
+            IPServidor = args[0];
+            puertoServidor = Integer.parseInt(args[1]);
+        } else {
+            System.out.println("Introduce la IP del servidor");
+            IPServidor = "localhost";
 
-        try {
-            s = new Socket("localhost", 99);
-        } catch (IOException e) {
-            e.printStackTrace();
+            System.out.println("Introduce el puerto del servidor");
+            puertoServidor = Integer.parseInt(in.nextLine());
         }
 
+        in.close();
+
+        // Ahora creamos el socket que conecta con el servidor, y la instancia de Cliente
+
+        Socket s;
+
+        try {
+            s = new Socket(IPServidor, puertoServidor);
+        } catch (IOException e) {
+            System.err.printf("error al conectar con el servidor: %s", e.getMessage());
+            throw new RuntimeException(e);
+        }
 
         ObjectOutputStream fout = null;
         ObjectInputStream fin = null;
@@ -66,48 +71,31 @@ public class Cliente {
             fout = new ObjectOutputStream(s.getOutputStream());
             fin = new ObjectInputStream(s.getInputStream());
         } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            System.err.printf("error: no se ha podido crear el canal de comunicación. %s", e.getMessage());
         }
 
-
-        OyenteServidor oyente = null;
-
-        try {
-            oyente = new OyenteServidor(fout, fin, oyenteLock);
-        } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-        Cliente cl = new Cliente(99, IPCliente, s, fout, fin, in, oyente);
-
-        oyente.start();
-        cl.run();
-
-        //Ahora lo que hay que hacer es que ejecute el menu
-
-
+        Cliente cli = new Cliente(s, fout, fin);
+        cli.run();
     }
 
 
     public void run() {
-        //Lo primero que va a hacer el cliente cuando se cree, es mandar un mensaje de que se ha conectado al servidor
+        try {
+            OyenteServidor oyente = new OyenteServidor(fout, fin);
+            oyente.start();
+        } catch (IOException e) {
+            System.err.printf("se ha producido un error: %s", e.getMessage());
+        }
+
+        // Lo primero que va a hacer el cliente cuando se cree, es mandar un mensaje de que se ha conectado al servidor
         try {
             fout.writeObject(new Conexion());
-
         } catch (IOException e) {
             System.err.println("El cliente no ha podido mandar el mensaje de CONEXION");
         }
 
-
-        //Menu
-        try {
-            menu();
-        } catch (ClassNotFoundException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-
+        // Menu
+        menu();
 
         //Se cierra el socket y los canales
         try {
@@ -115,18 +103,15 @@ public class Cliente {
             fout.close();
             s.close();
             in.close();
-
-
         } catch (IOException e) {
-            e.printStackTrace();
+            System.err.printf("se ha producido un error: %s", e.getMessage());
         }
     }
 
 
-    private void menu() throws ClassNotFoundException {
+    private void menu() {
 
         int option = 0;
-
         while (option != -1) {
 
             System.out.println("Escoge una de las opciones: ");
@@ -135,32 +120,19 @@ public class Cliente {
             option = Integer.parseInt(str);
 
             switch (option) {
-
-                case 1: //DECONEXION CLIENTE
+                case 1: // DESCONEXION CLIENTE
                     System.out.println("El cliente se quiere desconectar");
                     try {
                         fout.writeObject(new DesconexionCliente());
                     } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-
-                    boolean desconectado = this.oyente.getDesconectado();
-                    while (desconectado) {
-                        desconectado = this.oyente.getDesconectado();
+                        System.err.printf("se ha producido un error: %s", e.getMessage());
                     }
 
 
-                    //Una vez se ha recibido por parte del servidor que se va a desconectar el cliente -> Se cambia de opcion
-                    //para asi salir dle bucle y cerrar los sockets y todo
+                    // Una vez se ha recibido por parte del servidor que se va a desconectar el cliente -> Se cambia de opcion
+                    // para asi salir del bucle y cerrar los sockets y tod
                     option = -1;
-
-
             }
-
         }
-
-
     }
-
-
 }
