@@ -10,7 +10,7 @@ import java.util.List;
  */
 public interface AlmacenRWI<T extends Serializable> {
 
-    public boolean escribir(T producto, String key) throws InterruptedException;
+    public boolean escribir(T producto) throws InterruptedException;
 
     public boolean borrar(T value) throws InterruptedException;
 

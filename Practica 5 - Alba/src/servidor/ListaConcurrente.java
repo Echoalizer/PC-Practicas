@@ -22,7 +22,7 @@ public class ListaConcurrente<T extends Serializable> implements AlmacenRWI<T> {
     }
 
     @Override
-    public boolean escribir(T value, String key) throws InterruptedException {
+    public boolean escribir(T value) throws InterruptedException {
         boolean insertado = false;
         try {
             controller.request_write();

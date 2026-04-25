@@ -2,19 +2,22 @@ package mensajes;
 
 import utils.Cancion;
 
-import java.util.Set;
+import java.util.HashSet;
+
 
 public class RespuestaListaCanciones extends Mensaje {
 
-    private Set<Cancion> lista;
+    // concretamente HashSet porque es serializable
+    private final HashSet<Cancion> lista;
 
-    public RespuestaListaCanciones(Set<Cancion> lista) {
-        super(TipoMensaje.RESPUESTA_LISTA_CANCIONES);
+    public RespuestaListaCanciones(String sender, String receiver, HashSet<Cancion> lista) {
+        super(TipoMensaje.RESPUESTA_LISTA_CANCIONES, sender, receiver);
         this.lista = lista;
     }
 
-    public Set<Cancion> getLista() {
-        return lista;
+    @Override
+    public HashSet<Cancion> getContent() {
+        return this.lista;
     }
 
 }

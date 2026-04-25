@@ -2,19 +2,21 @@ package mensajes;
 
 import utils.Usuario;
 
-import java.util.Set;
+import java.util.HashSet;
 
 
 public class RespuestaListaUsuarios extends Mensaje {
 
-    private Set<Usuario> lista;
+    private final HashSet<Usuario> lista;
 
-    public RespuestaListaUsuarios() {
-        super(TipoMensaje.RESPUESTA_LISTA_USUARIOS);
+    public RespuestaListaUsuarios(String sender, String receiver, HashSet<Usuario> lista) {
+        super(TipoMensaje.RESPUESTA_LISTA_USUARIOS, sender, receiver);
+        this.lista = lista;
     }
 
-    public Set<Usuario> getLista() {
-        return lista;
+    @Override
+    public HashSet<Usuario> getContent() {
+        return this.lista;
     }
 
 }

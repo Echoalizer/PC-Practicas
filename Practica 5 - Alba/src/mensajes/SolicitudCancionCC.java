@@ -2,10 +2,10 @@ package mensajes;
 
 import java.io.Serializable;
 
-public class SolicitudListaUsuarios extends Mensaje {
+public class SolicitudCancionCC extends Mensaje {
 
-    public SolicitudListaUsuarios(String sender, String receiver) {
-        super(TipoMensaje.SOLICITUD_LISTA_USUARIOS, sender, receiver);
+    public SolicitudCancionCC(String sender, String receiver) {
+        super(TipoMensaje.SOLICITUD_CANCION_CC, sender, receiver);
     }
 
     @Override
