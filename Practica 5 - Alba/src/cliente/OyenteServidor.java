@@ -4,6 +4,7 @@ import locks.LockId;
 import locks.LockTicket;
 import mensajes.Mensaje;
 import mensajes.TipoMensaje;
+import producersConsumers.SharedBuffer;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -11,18 +12,23 @@ import java.io.ObjectOutputStream;
 
 public class OyenteServidor extends Thread {
 
+    private final SharedBuffer buffer;
+
     private int id;
     private String name;
     private ObjectInputStream fin;
     private ObjectOutputStream fout;
 
+
     // para controlar accceso a los canales de oyenteServidor y emisor
     private LockId socketLock;
 
     // throws IOException ya que si hay algún error, directamente no se crea el objeto
-    public OyenteServidor(ObjectOutputStream fout, ObjectInputStream fin) throws IOException {
+    public OyenteServidor(ObjectOutputStream fout, ObjectInputStream fin, SharedBuffer buffer) throws IOException {
         this.fin = fin;
         this.fout = fout;
+
+        this.buffer = buffer;
 
         this.socketLock = new LockTicket();
     }
@@ -39,7 +45,7 @@ public class OyenteServidor extends Thread {
 
                 switch (tipo) {
                     case CONFIRMACION_CONEXION:
-                        System.out.println("Se ha establecido conexion con el servidor");
+                        buffer.almacenar("Se ha establecido conexion con el servidor");
                         break;
 
                     case RESPUESTA_LISTA_USUARIOS:

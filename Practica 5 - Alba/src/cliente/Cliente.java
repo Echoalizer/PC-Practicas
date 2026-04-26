@@ -4,6 +4,7 @@ import locks.LockId;
 import locks.LockTicket;
 import mensajes.Conexion;
 import mensajes.DesconexionCliente;
+import producersConsumers.SharedBuffer;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -21,11 +22,16 @@ public class Cliente {
     private final ObjectOutputStream fout;
     private final ObjectInputStream fin;
 
+    private final SharedBuffer buffer;
+
     public Cliente(Socket s, ObjectOutputStream fout, ObjectInputStream fin, Scanner in) {
         this.s = s;
         this.fout = fout;
         this.fin = fin;
         this.reader = in;
+
+        this.buffer = new SharedBuffer(2);  // tamaño del buffer
+        new Consola(buffer).start();
 
         // lock para la terminal
         this.oyenteLock = new LockTicket();
@@ -44,6 +50,7 @@ public class Cliente {
             IPServidor = args[0];
             puertoServidor = Integer.parseInt(args[1]);
         } else {
+            // este codigo no envia mensajes a la consola porque se ejecuta de forma secuencial
             System.out.print("Introduce la IP del servidor: ");
             IPServidor = in.nextLine();
 
@@ -70,16 +77,23 @@ public class Cliente {
             System.err.printf("error: no se ha podido crear el canal de comunicación. %s", e.getMessage());
         }
 
+        // a partir de aquí la consola se encarga de escribir los mensajes
         Cliente cli = new Cliente(s, fout, fin, in);
         cli.run();
     }
 
+    // hace de productor al enviar mensajes a la consola
     public void run() {
         try {
-            OyenteServidor oyente = new OyenteServidor(fout, fin);
+            OyenteServidor oyente = new OyenteServidor(fout, fin, buffer);
             oyente.start();
         } catch (IOException e) {
-            System.err.printf("se ha producido un error: %s", e.getMessage());
+            try {
+                this.buffer.almacenar("se ha producido un error");
+            } catch (InterruptedException ex) {
+                throw new RuntimeException(ex);
+            }
+//            System.err.printf("se ha producido un error: %s", e.getMessage());
         }
 
         // Lo primero que va a hacer el cliente cuando se cree, es mandar un mensaje de que se ha conectado al servidor

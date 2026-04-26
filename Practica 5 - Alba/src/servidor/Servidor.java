@@ -1,7 +1,7 @@
 package servidor;
 
-import locks.LockId;
-import locks.LockTicket;
+import cliente.Consola;
+import producersConsumers.SharedBuffer;
 import utils.Cancion;
 import utils.Usuario;
 
@@ -21,8 +21,7 @@ public class Servidor {
     private final ListaConcurrente<Cancion> canciones;
     private final MapaCancionesUsuarios canciones_por_usuario;
 
-    // este era para la consola, usar LockTicket en oyenteServidor
-    private final LockId oyenteLock;
+    private final SharedBuffer buffer;
 
 //    private final Map<Usuario, ObjectOutputStream> canales;
 
@@ -33,8 +32,10 @@ public class Servidor {
         this.canciones = new ListaConcurrente<>();
         this.canciones_por_usuario = new MapaCancionesUsuarios();
 
-        this.oyenteLock = new LockTicket();
+        this.buffer = new SharedBuffer(2);  // tamaño del buffer
+        new Consola(buffer).start();
     }
+
 
     public static void main(String[] args) {
 
@@ -45,6 +46,7 @@ public class Servidor {
             puertoServidor = Integer.parseInt(args[0]);
         else {
             System.out.print("Introduce el puerto del servidor: ");
+            // no necesitamos usar el buffer de la consola en main porque se ejecuta sin concurrencia
             puertoServidor = in.nextInt();
         }
 
@@ -53,8 +55,8 @@ public class Servidor {
         try {
             ServerSocket listen = new ServerSocket(puertoServidor);  // nunca se cierra
             Servidor servidor = new Servidor(listen);
-            // proteger con lock
             System.out.println("El servidor se ha creado correctamente.");
+            // no necesitamos usar el buffer de la consola en main porque se ejecuta sin concurrencia
             servidor.run();
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -73,11 +75,16 @@ public class Servidor {
                 ObjectOutputStream fout = new ObjectOutputStream(ss.getOutputStream());
                 ObjectInputStream fin = new ObjectInputStream(ss.getInputStream());
 
-                OyenteCliente oyente = new OyenteCliente(ss, k, fout, fin, this, oyenteLock);
+                OyenteCliente oyente = new OyenteCliente(ss, k, fout, fin, buffer);
 
                 oyente.start();
             } catch (IOException e) {
-                System.err.printf("Error al conectar con el cliente: %s\n", e.getMessage());
+                try {
+                    this.buffer.almacenar("Error al conectar con el cliente");
+                } catch (InterruptedException ex) {
+                    System.err.println("Error al almacenar en el buffer de consola!");
+                }
+//                System.err.printf("Error al conectar con el cliente: %s\n", e.getMessage());
             }
         }
     }

@@ -1,11 +1,11 @@
 package servidor;
 
-import locks.LockId;
 import mensajes.ConfirmacionConexion;
 import mensajes.Mensaje;
 import mensajes.TipoMensaje;
-import utils.Usuario;
+import producersConsumers.SharedBuffer;
 
+import javax.naming.OperationNotSupportedException;
 import java.io.EOFException;
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -21,13 +21,12 @@ public class OyenteCliente extends Thread {
     private final ObjectInputStream fin;
     private final ObjectOutputStream fout;
 
-    private Servidor servidor;
-
-    private final LockId logLock;
+    // el nombre puede ser confuso pero ayuda a la legibilidad en el swith de mensajes
+    private final SharedBuffer consola;
 
     // throws IOException ya que si hay algún error, directamente no se crea el objeto
     public OyenteCliente(Socket s, int id, ObjectOutputStream fout, ObjectInputStream fin,
-                         Servidor servidor, LockId lock
+                         SharedBuffer buffer
     ) throws IOException {
         this.id = id;
         this.name = "OC" + id;
@@ -35,15 +34,15 @@ public class OyenteCliente extends Thread {
         this.fin = fin;
         this.fout = fout;
 
-        this.logLock = lock;
-        this.servidor = servidor;
+        this.consola = buffer;
     }
 
     @Override
     public void run() {
+        boolean continua = true;
 
         try {
-            while (true) {
+            while (continua) {
                 Mensaje msg = (Mensaje) fin.readObject();
 
                 //
@@ -54,9 +53,7 @@ public class OyenteCliente extends Thread {
                 switch (tipo) {
                     case CONEXION_CS:
                         // productor-consumidor para la consola
-                        logLock.takeLock(0);
-                        System.out.printf("Conexión establecida con el cliente en %s\n", name);
-                        logLock.releaseLock(0);
+                        this.consola.almacenar(name + " - Conexión establecida");
 
                         // hay que añadir emisor y receptor al mensaje
                         fout.writeObject(new ConfirmacionConexion("", ""));
@@ -69,7 +66,7 @@ public class OyenteCliente extends Thread {
                         break;
 
                     case SOLICITUD_CANCION:
-                        Usuario receptor = this.servidor.getUsuarioCancion("");
+//                        Usuario receptor = this.servidor.getUsuarioCancion("");
 
 //                        var fout = this.canales.get(user);
 //                        socketLock.takeLock(0);
@@ -83,15 +80,12 @@ public class OyenteCliente extends Thread {
                         break;
 
                     case DESCONEXION_CS:
-                        logLock.takeLock(0);
-                        System.out.println("Se va a desconectar el cliente");
-                        logLock.releaseLock(0);
-                        // cerrar los canales correspondientes
+                        this.consola.almacenar(name + " - Se ha desconectado el cliente");
+                        continua = false;
                         break;
 
                     default:
-                        // error: tipo de mensaje no reconocido
-                        break;
+                        throw new OperationNotSupportedException("No existe el tipo de mensaje.");
                 }
             }
 
@@ -104,7 +98,7 @@ public class OyenteCliente extends Thread {
                 fin.close();
                 fout.close();
                 s.close();
-//                System.out.println("cerrar ok");
+                System.out.println("DEBUG cerrar ok");
             } catch (IOException e) {
                 System.err.println("No se han podido cerrar las conexiones");
             }
