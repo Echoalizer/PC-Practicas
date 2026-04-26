@@ -45,14 +45,14 @@ public class Cliente {
             IPServidor = args[0];
             puertoServidor = Integer.parseInt(args[1]);
         } else {
-            System.out.println("Introduce la IP del servidor");
-            IPServidor = "localhost";
+            System.out.print("Introduce la IP del servidor: ");
+            IPServidor = in.nextLine();
 
-            System.out.println("Introduce el puerto del servidor");
-            puertoServidor = Integer.parseInt(in.nextLine());
+            System.out.print("Introduce el puerto del servidor: ");
+            puertoServidor = in.nextInt();  // Integer.parseInt(in.nextLine()) ?
         }
 
-        in.close();
+        in.close();  // lo queremos mantener?
 
         // Ahora creamos el socket que conecta con el servidor, y la instancia de Cliente
 
@@ -78,7 +78,6 @@ public class Cliente {
         cli.run();
     }
 
-
     public void run() {
         try {
             OyenteServidor oyente = new OyenteServidor(fout, fin);
@@ -89,7 +88,7 @@ public class Cliente {
 
         // Lo primero que va a hacer el cliente cuando se cree, es mandar un mensaje de que se ha conectado al servidor
         try {
-            fout.writeObject(new Conexion());
+            fout.writeObject(new Conexion("", ""));
         } catch (IOException e) {
             System.err.println("El cliente no ha podido mandar el mensaje de CONEXION");
         }
@@ -116,14 +115,14 @@ public class Cliente {
 
             System.out.println("Escoge una de las opciones: ");
             System.out.println("1. DESCONEXION CLIENTE");
-            String str = in.nextLine();
-            option = Integer.parseInt(str);
+
+            option = in.nextInt();
 
             switch (option) {
                 case 1: // DESCONEXION CLIENTE
                     System.out.println("El cliente se quiere desconectar");
                     try {
-                        fout.writeObject(new DesconexionCliente());
+                        fout.writeObject(new DesconexionCliente("", ""));
                     } catch (IOException e) {
                         System.err.printf("se ha producido un error: %s", e.getMessage());
                     }

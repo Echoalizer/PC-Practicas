@@ -78,7 +78,7 @@ public class Servidor {
             puertoServidor = Integer.parseInt(args[0]);
         else {
             System.out.print("Introduce el puerto del servidor: ");
-            puertoServidor = Integer.parseInt(in.nextLine());
+            puertoServidor = in.nextInt();
         }
 
         in.close();

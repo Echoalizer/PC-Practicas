@@ -63,7 +63,6 @@ public class OyenteServidor extends Thread {
 
             }
 
-
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

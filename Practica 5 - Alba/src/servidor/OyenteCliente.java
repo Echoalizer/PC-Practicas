@@ -17,8 +17,8 @@ public class OyenteCliente extends Thread {
     private final String name;
     private final Socket s;
 
-    private ObjectInputStream fin;
-    private ObjectOutputStream fout;
+    private final ObjectInputStream fin;
+    private final ObjectOutputStream fout;
 
     private Servidor servidor;
 
@@ -54,11 +54,11 @@ public class OyenteCliente extends Thread {
                     case CONEXION_CS:
                         // productor-consumidor para la consola
                         logLock.takeLock(0);
-                        System.out.println("Se ha establecido conexion con el cliente");
+                        System.out.printf("Conexión establecida con el cliente en %s", name);
                         logLock.releaseLock(0);
 
                         // hay que añadir emisor y receptor al mensaje
-                        fout.writeObject(new ConfirmacionConexion());
+                        fout.writeObject(new ConfirmacionConexion("", ""));
                         break;
 
                     case SOLICITUD_LISTA_USUARIOS:
@@ -101,7 +101,5 @@ public class OyenteCliente extends Thread {
             throw new RuntimeException(e);
         }
 
-
     }
-
 }
