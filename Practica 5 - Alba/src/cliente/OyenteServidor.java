@@ -19,7 +19,7 @@ public class OyenteServidor extends Thread {
     // para controlar accceso a los canales de oyenteServidor y emisor
     private LockId socketLock;
 
-    // Hace throws IOException ya que si hay algun error, el compilador directamente no crea el objeto
+    // throws IOException ya que si hay algún error, directamente no se crea el objeto
     public OyenteServidor(ObjectOutputStream fout, ObjectInputStream fin) throws IOException {
         this.fin = fin;
         this.fout = fout;
@@ -41,6 +41,22 @@ public class OyenteServidor extends Thread {
                     case CONFIRMACION_CONEXION:
                         System.out.println("Se ha establecido conexion con el servidor");
                         break;
+
+                    case RESPUESTA_LISTA_USUARIOS:
+                        break;
+
+                    case RESPUESTA_LISTA_CANCIONES:
+                        break;
+
+                    case EMITIR_CANCION:
+                        break;
+
+                    case PREPARADO_SC:
+                        break;
+
+                    case DESCONEXION_SC:
+                        break;
+
                     default:
                         break;
                 }

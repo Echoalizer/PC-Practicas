@@ -61,6 +61,26 @@ public class OyenteCliente extends Thread {
                         fout.writeObject(new ConfirmacionConexion());
                         break;
 
+                    case SOLICITUD_LISTA_USUARIOS:
+                        break;
+
+                    case SOLICITUD_LISTA_CANCIONES:
+                        break;
+
+                    case SOLICITUD_CANCION:
+                        Usuario receptor = this.servidor.getUsuarioCancion("");
+
+//                        var fout = this.canales.get(user);
+//                        socketLock.takeLock(0);
+//                        fout.println(mensaje);
+//                        socketLock.releaseLock(0);
+
+                        break;
+
+                    case PREPARADO_CS:
+
+                        break;
+
                     case DESCONEXION_CS:
                         logLock.takeLock(0);
                         System.out.println("Se va a desconectar el cliente");
@@ -68,18 +88,8 @@ public class OyenteCliente extends Thread {
                         // cerrar los canales correspondientes
                         break;
 
-                    case RESPUESTA_LISTA_USUARIOS:
-                        break;
-
-                    case SOLICITUD_CANCION:
-                        Usuario receptor = this.servidor.getUsuarioCancion("");
-                        this.servidor.enviar(receptor, new ConfirmacionConexion());
-                        break;
-
-                    case PREPARADO_CS:
-
-                        break;
                     default:
+                        // error: tipo de mensaje no reconocido
                         break;
                 }
 

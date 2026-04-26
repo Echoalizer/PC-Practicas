@@ -2,7 +2,6 @@ package servidor;
 
 import locks.LockId;
 import locks.LockTicket;
-import mensajes.Mensaje;
 import utils.Cancion;
 import utils.Usuario;
 
@@ -40,6 +39,7 @@ public class Servidor {
     public void run() throws IOException {
         Socket ss;
         int k = 0;
+        // permitir parar el bucle
         while (true) {
             ss = srvSocket.accept();
             k++;
@@ -55,14 +55,6 @@ public class Servidor {
                 System.err.printf("Error al conectar con el cliente: %s\n", e.getMessage());
             }
         }
-    }
-
-    public void enviar(Usuario user, Mensaje mensaje) {
-        // mover a oyenteCliente
-//        var fout = this.canales.get(user);
-//        socketLock.takeLock(0);
-//        fout.println(mensaje);
-//        socketLock.releaseLock(0);
     }
 
     public ListaConcurrente<Usuario> getUsuarios() {
