@@ -22,7 +22,7 @@ public class OyenteCliente extends Thread {
     private final ObjectInputStream fin;
     private final ObjectOutputStream fout;
 
-    // el nombre puede ser confuso pero ayuda a la legibilidad en el swith de mensajes
+    // el nombre puede ser confuso pero ayuda a la legibilidad en el switch de mensajes
     private final SharedBuffer consola;
 
     private final Servidor servidor;
@@ -82,12 +82,15 @@ public class OyenteCliente extends Thread {
                         case SOLICITUD_CANCION:
                             String cancion = (String) msg.getContent();
                             Usuario propietario = this.servidor.getUsuarioCancion(cancion);
-                            cout = this.servidor.getCanal(propietario.getUsername());
-                            cout.writeObject(new EmitirCancion(sender, null));
+                            receiver = propietario.getUsername();
+                            this.consola.enviar(name + " - Solicitud de conexión: " + sender + " --- " + receiver);
+                            cout = this.servidor.getCanal(receiver);
+                            cout.writeObject(new EmitirCancion(sender, receiver));
                             break;
 
                         case PREPARADO_CS:
                             cout = servidor.getCanal(receiver);
+                            this.consola.enviar(name + " - Se creará conexión:  " + sender + " --- " + receiver);
                             cout.writeObject(new PreparadoSC(sender, receiver));
                             break;
 

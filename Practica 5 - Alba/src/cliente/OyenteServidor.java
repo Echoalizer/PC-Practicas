@@ -3,22 +3,27 @@ package cliente;
 import locks.LockId;
 import locks.LockTicket;
 import mensajes.Mensaje;
+import mensajes.PreparadoCS;
 import mensajes.TipoMensaje;
 import producersConsumers.SharedBuffer;
+import utils.Cancion;
+import utils.Usuario;
 
+import javax.naming.OperationNotSupportedException;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.util.ArrayList;
 
 public class OyenteServidor extends Thread {
 
-    private final SharedBuffer buffer;
+    private final SharedBuffer consola;
+
+    private final ObjectInputStream fin;
+    private final ObjectOutputStream fout;
 
     private int id;
     private String name;
-    private ObjectInputStream fin;
-    private ObjectOutputStream fout;
-
 
     // para controlar accceso a los canales de oyenteServidor y emisor
     private LockId socketLock;
@@ -28,49 +33,77 @@ public class OyenteServidor extends Thread {
         this.fin = fin;
         this.fout = fout;
 
-        this.buffer = buffer;
+        this.consola = buffer;
 
         this.socketLock = new LockTicket();
     }
 
     @Override
     public void run() {
+        boolean continua = true;
+        boolean listening = true;  // dependiente del thread Cliente.run()
+
+        Mensaje msg;
+        String server = "server", sender = name, receiver;
+        TipoMensaje tipo;
+
+        ObjectOutputStream cout;
+
         try {
 
-            while (true) { // while listening
+            while (listening && continua) {
 
-                Mensaje msg = (Mensaje) fin.readObject();
+                msg = (Mensaje) fin.readObject();
 
-                TipoMensaje tipo = msg.getTipo();
+                tipo = msg.getTipo();
+                sender = msg.getSender();
+                receiver = msg.getReceiver();
 
                 switch (tipo) {
                     case CONFIRMACION_CONEXION:
-                        buffer.enviar("Se ha establecido conexion con el servidor");
+                        consola.enviar("Se ha establecido conexion con el servidor");
                         break;
 
                     case RESPUESTA_LISTA_USUARIOS:
+                        ArrayList<Usuario> usuarios = (ArrayList<Usuario>) msg.getContent();
+                        consola.enviar(usuarios.toString());
                         break;
 
                     case RESPUESTA_LISTA_CANCIONES:
+                        ArrayList<Cancion> canciones = (ArrayList<Cancion>) msg.getContent();
+                        consola.enviar(canciones.toString());
                         break;
 
                     case EMITIR_CANCION:
+                        // crear thread emisor
+                        // assert receiver == this.name
+                        fout.writeObject(new PreparadoCS(name, sender));
                         break;
 
                     case PREPARADO_SC:
+                        // crear thread receptor
                         break;
 
                     case DESCONEXION_SC:
+                        consola.enviar("ERROR Se ha desconectado el servidor.");
+                        continua = false;
                         break;
 
                     default:
-                        break;
+                        throw new OperationNotSupportedException("No existe el tipo de mensaje.");
                 }
 
             }
 
         } catch (Exception e) {
             throw new RuntimeException(e);
+        } finally {
+            try {
+                fin.close();
+                fout.close();
+            } catch (IOException e) {
+//                System.err.println("no se pudo cerrar el socket");
+            }
         }
     }
 }

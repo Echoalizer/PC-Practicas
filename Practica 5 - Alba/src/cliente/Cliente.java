@@ -4,6 +4,7 @@ import locks.LockId;
 import locks.LockTicket;
 import mensajes.Conexion;
 import mensajes.DesconexionCliente;
+import mensajes.SolicitudCancion;
 import producersConsumers.SharedBuffer;
 
 import java.io.IOException;
@@ -115,7 +116,6 @@ public class Cliente {
         }
     }
 
-
     private void menu() {
 
         int option = 0;
@@ -123,22 +123,37 @@ public class Cliente {
 
             System.out.println("Escoge una de las opciones: ");
             System.out.println("1. DESCONEXION CLIENTE");
+            System.out.println("2. LISTA USUARIOS");
+            System.out.println("3. LISTA CANCIONES");
+            System.out.println("4. SOLICITAR CANCION");
 
             option = reader.nextInt();
 
             switch (option) {
-                case 1: // DESCONEXION CLIENTE
-                    System.out.println("El cliente se quiere desconectar");
+                case 1:
                     try {
                         fout.writeObject(new DesconexionCliente("", ""));
                     } catch (IOException e) {
                         System.err.printf("se ha producido un error: %s", e.getMessage());
                     }
-
-
                     // Una vez se ha recibido por parte del servidor que se va a desconectar el cliente -> Se cambia de opcion
                     // para asi salir del bucle y cerrar los sockets y tod
                     option = -1;
+                    break;
+                case 2:
+                    System.out.println("Lista de usuarios");
+                    break;
+                case 3:
+                    System.out.println("Lista de canciones");
+                    break;
+                case 4:
+                    System.out.print("Id de la cancion: ");
+                    String id = reader.nextLine();
+                    try {
+                        fout.writeObject(new SolicitudCancion("name", null, id));
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
                     break;
                 default:
                     break;
