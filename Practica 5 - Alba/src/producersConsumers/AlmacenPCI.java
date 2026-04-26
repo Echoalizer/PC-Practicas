@@ -7,7 +7,9 @@ public interface AlmacenPCI {
      * hueco el proceso que ejecute el metodo bloqueará hasta que lo
      * haya.
      */
-    public void almacenar(String mensaje) throws InterruptedException;
+    public void enviar(String mensaje) throws InterruptedException;
+
+//    public void enviarf(String mensaje, Object... format) throws InterruptedException;
 
     /**
      * Extrae el primer producto disponible. Si no hay productos el

@@ -7,7 +7,6 @@ import readersWriters.ReadWriteController;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 
@@ -50,8 +49,8 @@ public class ListaConcurrente<T extends Serializable> implements AlmacenRWI<T> {
     }
 
     @Override
-    public List<T> leerLista() throws InterruptedException {
-        List<T> lista;
+    public ArrayList<T> leerLista() throws InterruptedException {
+        ArrayList<T> lista;
         try {
             controller.request_read();
             lista = new ArrayList<>(valores);

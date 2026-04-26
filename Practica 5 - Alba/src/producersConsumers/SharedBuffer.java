@@ -16,7 +16,7 @@ public class SharedBuffer implements AlmacenPCI {
     }
 
     @Override
-    public void almacenar(String str) throws InterruptedException {
+    public void enviar(String str) throws InterruptedException {
         controller.acquireProd();
 
         buffer[fin] = str;

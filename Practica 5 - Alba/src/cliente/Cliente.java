@@ -89,11 +89,10 @@ public class Cliente {
             oyente.start();
         } catch (IOException e) {
             try {
-                this.buffer.almacenar("se ha producido un error");
+                this.buffer.enviar("se ha producido un error: %s".formatted(e.getMessage()));
             } catch (InterruptedException ex) {
                 throw new RuntimeException(ex);
             }
-//            System.err.printf("se ha producido un error: %s", e.getMessage());
         }
 
         // Lo primero que va a hacer el cliente cuando se cree, es mandar un mensaje de que se ha conectado al servidor

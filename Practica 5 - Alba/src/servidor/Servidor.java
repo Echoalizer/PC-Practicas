@@ -10,6 +10,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.ArrayList;
 import java.util.Scanner;
 
 
@@ -19,18 +20,22 @@ public class Servidor {
 
     private final ListaConcurrente<Usuario> usuarios;
     private final ListaConcurrente<Cancion> canciones;
-    private final MapaCancionesUsuarios canciones_por_usuario;
+    // canciones indexadas por username
+    private final MapaConcurrente<Usuario> canciones_por_usuario;
+
+    private final MapaConcurrente<ObjectOutputStream> canales;
 
     private final SharedBuffer buffer;
 
-//    private final Map<Usuario, ObjectOutputStream> canales;
 
     public Servidor(ServerSocket s) {
         this.srvSocket = s;
 
         this.usuarios = new ListaConcurrente<>();
         this.canciones = new ListaConcurrente<>();
-        this.canciones_por_usuario = new MapaCancionesUsuarios();
+        this.canciones_por_usuario = new MapaConcurrente<>();
+
+        this.canales = new MapaConcurrente<>();
 
         this.buffer = new SharedBuffer(2);  // tamaño del buffer
         new Consola(buffer).start();
@@ -75,29 +80,36 @@ public class Servidor {
                 ObjectOutputStream fout = new ObjectOutputStream(ss.getOutputStream());
                 ObjectInputStream fin = new ObjectInputStream(ss.getInputStream());
 
-                OyenteCliente oyente = new OyenteCliente(ss, k, fout, fin, buffer);
+                OyenteCliente oyente = new OyenteCliente(ss, k, fout, fin, buffer, this);
 
                 oyente.start();
             } catch (IOException e) {
                 try {
-                    this.buffer.almacenar("Error al conectar con el cliente");
+                    this.buffer.enviar("ERROR Error al conectar con el cliente: %s".formatted(e.getMessage()));
                 } catch (InterruptedException ex) {
                     System.err.println("Error al almacenar en el buffer de consola!");
                 }
-//                System.err.printf("Error al conectar con el cliente: %s\n", e.getMessage());
             }
         }
     }
 
-    public ListaConcurrente<Usuario> getUsuarios() {
-        return this.usuarios;
+    public ArrayList<Usuario> getUsuarios() throws InterruptedException {
+        return this.usuarios.leerLista();
     }
 
-    public ListaConcurrente<Cancion> getCanciones() {
-        return this.canciones;
+    public ArrayList<Cancion> getCanciones() throws InterruptedException {
+        return this.canciones.leerLista();
     }
 
     public Usuario getUsuarioCancion(String cancion) throws InterruptedException {
         return this.canciones_por_usuario.leer(cancion);
+    }
+
+    public boolean anadirCanal(String username, ObjectOutputStream canal) throws InterruptedException, IOException {
+        return this.canales.escribir(username, canal);
+    }
+
+    public ObjectOutputStream getCanal(String username) throws InterruptedException {
+        return this.canales.leer(username);
     }
 }

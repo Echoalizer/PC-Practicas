@@ -45,7 +45,7 @@ public class OyenteServidor extends Thread {
 
                 switch (tipo) {
                     case CONFIRMACION_CONEXION:
-                        buffer.almacenar("Se ha establecido conexion con el servidor");
+                        buffer.enviar("Se ha establecido conexion con el servidor");
                         break;
 
                     case RESPUESTA_LISTA_USUARIOS:
