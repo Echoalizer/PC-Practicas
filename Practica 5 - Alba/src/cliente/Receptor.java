@@ -3,7 +3,18 @@ package cliente;
 import mensajes.Mensaje;
 import mensajes.TipoMensaje;
 
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+
 public class Receptor extends Thread {
+
+    private final ObjectInputStream fin;
+    private final ObjectOutputStream fout;
+
+    public Receptor(ObjectInputStream fin, ObjectOutputStream fout) {
+        this.fin = fin;
+        this.fout = fout;
+    }
 
     @Override
     public void run() {

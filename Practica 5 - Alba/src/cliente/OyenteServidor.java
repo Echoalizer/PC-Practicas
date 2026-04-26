@@ -31,7 +31,7 @@ public class OyenteServidor extends Thread {
     public void run() {
         try {
 
-            while (true) {
+            while (true) { // while listening
 
                 Mensaje msg = (Mensaje) fin.readObject();
 

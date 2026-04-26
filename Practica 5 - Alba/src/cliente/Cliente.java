@@ -14,19 +14,18 @@ import java.util.Scanner;
 public class Cliente {
     private final Socket s;
 
-    private final Scanner in;
+    private final Scanner reader;
 
     private final LockId oyenteLock;
 
     private final ObjectOutputStream fout;
     private final ObjectInputStream fin;
 
-    public Cliente(Socket s, ObjectOutputStream fout, ObjectInputStream fin) {
+    public Cliente(Socket s, ObjectOutputStream fout, ObjectInputStream fin, Scanner in) {
         this.s = s;
         this.fout = fout;
         this.fin = fin;
-
-        this.in = new Scanner(System.in);
+        this.reader = in;
 
         // lock para la terminal
         this.oyenteLock = new LockTicket();
@@ -52,29 +51,26 @@ public class Cliente {
             puertoServidor = in.nextInt();  // Integer.parseInt(in.nextLine()) ?
         }
 
-        in.close();  // lo queremos mantener?
-
         // Ahora creamos el socket que conecta con el servidor, y la instancia de Cliente
 
-        Socket s;
-
+        Socket s = null;
         try {
             s = new Socket(IPServidor, puertoServidor);
         } catch (IOException e) {
-            System.err.printf("error al conectar con el servidor: %s", e.getMessage());
-            throw new RuntimeException(e);
+            System.err.printf("Error al conectar con el servidor: %s\n", e.getMessage());
+            System.exit(-1);
         }
 
-        ObjectOutputStream fout = null;
         ObjectInputStream fin = null;
+        ObjectOutputStream fout = null;
         try {
-            fout = new ObjectOutputStream(s.getOutputStream());
             fin = new ObjectInputStream(s.getInputStream());
+            fout = new ObjectOutputStream(s.getOutputStream());
         } catch (IOException e) {
             System.err.printf("error: no se ha podido crear el canal de comunicación. %s", e.getMessage());
         }
 
-        Cliente cli = new Cliente(s, fout, fin);
+        Cliente cli = new Cliente(s, fout, fin, in);
         cli.run();
     }
 
@@ -101,7 +97,6 @@ public class Cliente {
             fin.close();
             fout.close();
             s.close();
-            in.close();
         } catch (IOException e) {
             System.err.printf("se ha producido un error: %s", e.getMessage());
         }
@@ -116,7 +111,7 @@ public class Cliente {
             System.out.println("Escoge una de las opciones: ");
             System.out.println("1. DESCONEXION CLIENTE");
 
-            option = in.nextInt();
+            option = reader.nextInt();
 
             switch (option) {
                 case 1: // DESCONEXION CLIENTE
@@ -131,7 +126,17 @@ public class Cliente {
                     // Una vez se ha recibido por parte del servidor que se va a desconectar el cliente -> Se cambia de opcion
                     // para asi salir del bucle y cerrar los sockets y tod
                     option = -1;
+                    break;
+                default:
+                    break;
             }
+        }
+
+        try {
+            reader.close();
+        } catch (Exception e) {
+            System.err.println("no se pudo cerrar el scanner");
+            throw new RuntimeException(e);
         }
     }
 }

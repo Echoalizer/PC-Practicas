@@ -6,6 +6,7 @@ import mensajes.Mensaje;
 import mensajes.TipoMensaje;
 import utils.Usuario;
 
+import java.io.EOFException;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -54,7 +55,7 @@ public class OyenteCliente extends Thread {
                     case CONEXION_CS:
                         // productor-consumidor para la consola
                         logLock.takeLock(0);
-                        System.out.printf("Conexión establecida con el cliente en %s", name);
+                        System.out.printf("Conexión establecida con el cliente en %s\n", name);
                         logLock.releaseLock(0);
 
                         // hay que añadir emisor y receptor al mensaje
@@ -92,13 +93,21 @@ public class OyenteCliente extends Thread {
                         // error: tipo de mensaje no reconocido
                         break;
                 }
-
             }
-            // close socket, fin, fout
 
-
+        } catch (EOFException e) {
+            System.err.printf("%s - ERROR: El cliente se ha desconectado.\n", name);
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            System.err.printf("%s - ERROR: %s.\n", name, e.getMessage());
+        } finally {
+            try {
+                fin.close();
+                fout.close();
+                s.close();
+//                System.out.println("cerrar ok");
+            } catch (IOException e) {
+                System.err.println("No se han podido cerrar las conexiones");
+            }
         }
 
     }

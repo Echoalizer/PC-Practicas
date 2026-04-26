@@ -36,9 +36,34 @@ public class Servidor {
         this.oyenteLock = new LockTicket();
     }
 
+    public static void main(String[] args) {
+
+        Scanner in = new Scanner(System.in);
+
+        int puertoServidor;
+        if (args.length > 0)
+            puertoServidor = Integer.parseInt(args[0]);
+        else {
+            System.out.print("Introduce el puerto del servidor: ");
+            puertoServidor = in.nextInt();
+        }
+
+        in.close();
+
+        try {
+            ServerSocket listen = new ServerSocket(puertoServidor);  // nunca se cierra
+            Servidor servidor = new Servidor(listen);
+            // proteger con lock
+            System.out.println("El servidor se ha creado correctamente.");
+            servidor.run();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     public void run() throws IOException {
         Socket ss;
-        int k = 0;
+        int k = 0;  // concurrente para volver a bajar el numero de cliente
         // permitir parar el bucle
         while (true) {
             ss = srvSocket.accept();
@@ -68,30 +93,4 @@ public class Servidor {
     public Usuario getUsuarioCancion(String cancion) throws InterruptedException {
         return this.canciones_por_usuario.leer(cancion);
     }
-
-    public static void main(String[] args) {
-
-        Scanner in = new Scanner(System.in);
-
-        int puertoServidor;
-        if (args.length > 0)
-            puertoServidor = Integer.parseInt(args[0]);
-        else {
-            System.out.print("Introduce el puerto del servidor: ");
-            puertoServidor = in.nextInt();
-        }
-
-        in.close();
-
-        try {
-            ServerSocket listen = new ServerSocket(puertoServidor);  // nunca se cierra
-            Servidor servidor = new Servidor(listen);
-            // proteger con lock
-            System.out.println("El servidor se ha creado correctamente.");
-            servidor.run();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
 }
