@@ -7,7 +7,7 @@ import java.util.ArrayList;
 
 public class RespuestaListaCanciones extends Mensaje {
 
-    // concretamente ArrayList porque es serializable
+    // ArrayList en concreto porque el tipo más general List no es serializable
     private final ArrayList<Cancion> lista;
 
     public RespuestaListaCanciones(String sender, String receiver, ArrayList<Cancion> lista) {

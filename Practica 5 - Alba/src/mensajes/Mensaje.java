@@ -14,7 +14,7 @@ public abstract class Mensaje implements Serializable {
 	private final String from;
 	private final String to;
 
-	// Contenido del mensaje
+	// Contenido del mensaje -- para las clases que implementan
 	private Serializable content;
 
 	public Mensaje(TipoMensaje msg, String sender, String receiver) {

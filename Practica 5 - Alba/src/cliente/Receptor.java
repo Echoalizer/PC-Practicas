@@ -1,6 +1,7 @@
 package cliente;
 
 import mensajes.*;
+import producersConsumers.SharedBuffer;
 import utils.Cancion;
 
 import javax.naming.OperationNotSupportedException;
@@ -13,10 +14,13 @@ public class Receptor extends Thread {
     private ObjectInputStream fin;
     private ObjectOutputStream fout;
 
+    SharedBuffer consola;
+
     private final int port;
 
-    public Receptor(String port) {
+    public Receptor(String port, SharedBuffer buffer) {
         this.port = Integer.parseInt(port);
+        this.consola = buffer;
     }
 
     @Override
@@ -42,15 +46,14 @@ public class Receptor extends Thread {
 
                 switch (tipo) {
                     case CONFIRMACION_CONEXION:
-                        System.out.println("Se ha establecido conexion con el p2p");
+                        consola.enviar("Se ha establecido la conexion p2p");
                         // no tenemos id cancion
                         this.fout.writeObject(new SolicitudCancion(null, null, null));
                         break;
 
                     case RESPUESTA_CANCION_CC:
                         Cancion cancion = (Cancion) msg.getContent();
-                        System.out.println(cancion);
-                        System.out.println("que chula!!! muchas gracias!!!");
+                        consola.enviar("DEBUG" + cancion);
 
                         this.fout.writeObject(new Desconexion(null, null));
                         open = false;
@@ -61,7 +64,7 @@ public class Receptor extends Thread {
 
                 }
             }
-            System.out.println("Se ha desconectado");
+            consola.enviar("DEBUG Finalizada conexion p2p");
             this.fout.close();
             this.fin.close();
 

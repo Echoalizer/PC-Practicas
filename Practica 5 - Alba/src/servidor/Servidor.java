@@ -1,6 +1,9 @@
 package servidor;
 
-import cliente.Consola;
+import concurrent.Canal;
+import concurrent.Consola;
+import concurrent.ListaConcurrente;
+import concurrent.MapaConcurrente;
 import producersConsumers.SharedBuffer;
 import utils.Cancion;
 import utils.Usuario;
@@ -18,14 +21,14 @@ public class Servidor {
 
     private final ServerSocket srvSocket;
 
+    private final SharedBuffer buffer;
+
     private final ListaConcurrente<Usuario> usuarios;
     private final ListaConcurrente<Cancion> canciones;
     // canciones indexadas por username
     private final MapaConcurrente<Usuario> canciones_por_usuario;
 
     private final MapaConcurrente<Canal> canales;
-
-    private final SharedBuffer buffer;
 
 
     public Servidor(ServerSocket s) {
@@ -50,8 +53,8 @@ public class Servidor {
         if (args.length > 0)
             puertoServidor = Integer.parseInt(args[0]);
         else {
-            System.out.print("Introduce el puerto del servidor: ");
             // no necesitamos usar el buffer de la consola en main porque se ejecuta sin concurrencia
+            System.out.print("Introduce el puerto del servidor: ");
             puertoServidor = in.nextInt();
         }
 
@@ -60,18 +63,19 @@ public class Servidor {
         try {
             ServerSocket listen = new ServerSocket(puertoServidor);  // nunca se cierra
             Servidor servidor = new Servidor(listen);
-            System.out.println("El servidor se ha creado correctamente.");
             // no necesitamos usar el buffer de la consola en main porque se ejecuta sin concurrencia
+            System.out.println("El servidor se ha creado correctamente.");
             servidor.run();
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
 
+    /// TODO fix catch
     public void run() throws IOException {
         Socket ss;
         int k = 0;  // concurrente para volver a bajar el numero de cliente
-        // permitir parar el bucle
+        // while (alive)
         while (true) {
             ss = srvSocket.accept();
             k++;
@@ -87,26 +91,26 @@ public class Servidor {
                 try {
                     this.buffer.enviar("ERROR Error al conectar con el cliente: %s".formatted(e.getMessage()));
                 } catch (InterruptedException ex) {
-                    System.err.println("Error al almacenar en el buffer de consola!");
+                    throw new RuntimeException("Error al almacenar en el buffer de consola!");
                 }
             }
         }
     }
 
     public ArrayList<Usuario> getUsuarios() throws InterruptedException {
-        return this.usuarios.leerLista();
+        return this.usuarios.leerLista();  // re-throw
     }
 
     public boolean anadirUsuario(Usuario usuario) throws InterruptedException {
-        return this.usuarios.escribir(usuario);
+        return this.usuarios.escribir(usuario);  // re-throw
     }
 
     public ArrayList<Cancion> getCanciones() throws InterruptedException {
-        return this.canciones.leerLista();
+        return this.canciones.leerLista();  // re-throw
     }
 
     public boolean anadirCancion(Cancion cancion) throws InterruptedException {
-        return this.canciones.escribir(cancion);
+        return this.canciones.escribir(cancion);  // re-throw
     }
 
     public Usuario getUsuarioCancion(String cancion) throws InterruptedException {

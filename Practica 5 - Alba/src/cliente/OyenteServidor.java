@@ -1,7 +1,5 @@
 package cliente;
 
-import locks.LockId;
-import locks.LockTicket;
 import mensajes.Mensaje;
 import mensajes.PreparadoCS;
 import mensajes.TipoMensaje;
@@ -16,16 +14,12 @@ import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 
 public class OyenteServidor extends Thread {
-
-    private final SharedBuffer consola;
-
     private final ObjectInputStream fin;
     private final ObjectOutputStream fout;
 
-    private String name;
+    private final SharedBuffer consola;
 
-    // para controlar accceso a los canales de oyenteServidor y emisor
-    private LockId socketLock;
+    private String name;
 
     // throws IOException ya que si hay algún error, directamente no se crea el objeto
     public OyenteServidor(ObjectOutputStream fout, ObjectInputStream fin, SharedBuffer buffer) throws IOException {
@@ -33,8 +27,6 @@ public class OyenteServidor extends Thread {
         this.fout = fout;
 
         this.consola = buffer;
-
-        this.socketLock = new LockTicket();
     }
 
     @Override
@@ -45,8 +37,6 @@ public class OyenteServidor extends Thread {
         Mensaje msg;
         String server = "server", sender = name, receiver;
         TipoMensaje tipo;
-
-        ObjectOutputStream cout;
 
         try {
 
@@ -64,6 +54,7 @@ public class OyenteServidor extends Thread {
                         break;
 
                     case RESPUESTA_LISTA_USUARIOS:
+                        consola.enviar("Lista de usuarios");
                         ArrayList<Usuario> usuarios = (ArrayList<Usuario>) msg.getContent();
                         StringBuilder listaUsuarios = new StringBuilder();
                         for (Usuario u : usuarios) {
@@ -73,6 +64,7 @@ public class OyenteServidor extends Thread {
                         break;
 
                     case RESPUESTA_LISTA_CANCIONES:
+                        consola.enviar("Lista de canciones");
                         ArrayList<Cancion> canciones = (ArrayList<Cancion>) msg.getContent();
                         StringBuilder listaCanciones = new StringBuilder();
                         for (Cancion c : canciones) {
@@ -82,18 +74,16 @@ public class OyenteServidor extends Thread {
                         break;
 
                     case EMITIR_CANCION:
-                        // crear thread emisor
                         int port = 991;  // magic number
-                        new Emisor(port).start();
+                        new Emisor(port, consola).start();
                         // assert receiver == this.name --!-- no tenemos el name de Cliente
                         fout.writeObject(new PreparadoCS(receiver, sender, "" + port));
 
                         break;
 
                     case PREPARADO_SC:
-                        // crear thread receptor
                         String address = (String) msg.getContent();
-                        new Receptor(address).start();
+                        new Receptor(address, consola).start();
                         break;
 
                     case DESCONEXION:
@@ -106,16 +96,15 @@ public class OyenteServidor extends Thread {
                 }
 
             }
-
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        } finally {
-            try {
+            try {  // en finally?
                 fin.close();
                 fout.close();
             } catch (IOException e) {
-//                System.err.println("no se pudo cerrar el socket");
+                consola.enviar("ERROR no se pudo cerrar el socket");
             }
+
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         }
     }
 }

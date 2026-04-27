@@ -1,4 +1,4 @@
-package servidor;
+package concurrent;
 
 import readersWriters.ReadWriteController;
 import readersWriters.SyncRWMonitor;
@@ -6,9 +6,8 @@ import readersWriters.SyncRWMonitor;
 import java.io.IOException;
 import java.util.HashMap;
 
-///
+
 /// Sigue la misma estructura que AlmacenRWI por ser también el modelo de escritores y lectores.
-///
 public class MapaConcurrente<T> {
 
     private final ReadWriteController controller;
@@ -23,9 +22,7 @@ public class MapaConcurrente<T> {
     public boolean escribir(String key, T valor) throws InterruptedException, IOException {
         boolean insertado = false;
         controller.request_write();
-        if (valores.containsKey(key)) {
-            throw new IOException("Ya existe una cancion con ese id.");
-        } else {
+        if (!valores.containsKey(key)) {
             // en el caso concreto, solo guardamos un usuario por cada canción
             valores.put(key, valor);
             insertado = true;
@@ -34,14 +31,12 @@ public class MapaConcurrente<T> {
         return insertado;
     }
 
-    public boolean borrar(String key) throws InterruptedException, IOException {
+    public boolean borrar(String key) throws InterruptedException {
         boolean borrado = false;
         controller.request_write();
         if (valores.containsKey(key)) {
             valores.remove(key);
             borrado = true;
-        } else {
-            throw new IOException("No existe una cancion con ese id.");
         }
         controller.release_write();
         return borrado;

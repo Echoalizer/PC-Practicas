@@ -2,6 +2,7 @@ package mensajes;
 
 import java.io.Serializable;
 
+// Utilizado de forma genérica en todas las desconexiones
 public class Desconexion extends Mensaje {
 
     public Desconexion(String sender, String receiver) {

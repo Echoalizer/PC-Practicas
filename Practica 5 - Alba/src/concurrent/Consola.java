@@ -1,4 +1,4 @@
-package cliente;
+package concurrent;
 
 import producersConsumers.SharedBuffer;
 
@@ -23,6 +23,7 @@ public class Consola extends Thread {
 
     @Override
     public void run() {
+        // while (alive)
         while (true) {
             try {
                 String str = buffer.extraer();
@@ -32,7 +33,7 @@ public class Consola extends Thread {
                     err.println(str.substring(6));
                 else out.println(str);
             } catch (InterruptedException e) {
-                System.err.println("Error de concurrencia en el controlador");
+                err.println("Error de concurrencia en el controlador");
             }
         }
     }

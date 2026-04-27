@@ -1,4 +1,4 @@
-package servidor;
+package concurrent;
 
 import locks.LockId;
 import locks.LockTicket;

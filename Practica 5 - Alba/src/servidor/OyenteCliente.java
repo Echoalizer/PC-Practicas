@@ -1,5 +1,6 @@
 package servidor;
 
+import concurrent.Canal;
 import mensajes.*;
 import producersConsumers.SharedBuffer;
 import utils.Cancion;
@@ -17,13 +18,12 @@ public class OyenteCliente extends Thread {
     private final String name;
 
     private final Socket s;
-
     private final Canal canalCliente;
 
     // el nombre puede ser confuso pero ayuda a la legibilidad en el switch de mensajes
     private final SharedBuffer consola;
-
     private final Servidor servidor;
+
 
     // throws IOException ya que si hay algún error, directamente no se crea el objeto
     public OyenteCliente(Socket s, int id, ObjectOutputStream fout, ObjectInputStream fin,
@@ -32,7 +32,7 @@ public class OyenteCliente extends Thread {
         this.name = "OC" + id;
 
         this.s = s;
-        this.canalCliente = new Canal(fin, fout);
+        this.canalCliente = new Canal(fout, fin);
 
         this.consola = buffer;
         this.servidor = srv;

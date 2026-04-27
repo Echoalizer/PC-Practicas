@@ -4,6 +4,7 @@ import mensajes.ConfirmacionConexion;
 import mensajes.Mensaje;
 import mensajes.RespuestaCancion;
 import mensajes.TipoMensaje;
+import producersConsumers.SharedBuffer;
 import utils.Cancion;
 
 import javax.naming.OperationNotSupportedException;
@@ -17,18 +18,19 @@ public class Emisor extends Thread {
     private ObjectInputStream fin;
     private ObjectOutputStream fout;
 
+    SharedBuffer consola;
+
     private final int port;
 
-    public Emisor(int port) {
+    public Emisor(int port, SharedBuffer buffer) {
         this.port = port;
+        this.consola = buffer;
     }
 
     @Override
     public void run() {
         try (ServerSocket listen = new ServerSocket(port)) {
-            System.out.println("POV: no camino");
             Socket s = listen.accept();
-            System.out.println("que era bromaaaaa");
             this.fin = new ObjectInputStream(s.getInputStream());
             this.fout = new ObjectOutputStream(s.getOutputStream());
         } catch (Exception e) {
@@ -46,15 +48,15 @@ public class Emisor extends Thread {
 
                 switch (tipo) {
                     case CONEXION_CC:
-                        System.out.println("Se ha establecido conexion peer to peer");
+                        consola.enviar("Se ha establecido la conexion p2p");
                         this.fout.writeObject(new ConfirmacionConexion(null, null));
                         break;
 
                     case SOLICITUD_CANCION:
                         // obtener id
 //                        Cancion c = user.get(id);
-                        System.out.println("espero le guste....");
-                        this.fout.writeObject(new RespuestaCancion(null, null, new Cancion("2", "la la la", "yo mismx")));
+                        consola.enviar("DEBUG envio de cancion");
+                        this.fout.writeObject(new RespuestaCancion(null, null, new Cancion("215", "Hello", "Adele")));
                         break;
 
                     case DESCONEXION:
@@ -66,7 +68,7 @@ public class Emisor extends Thread {
 
                 }
             }
-            System.out.println("Se ha desconectado");
+            consola.enviar("DEBUG Finalizada conexion p2p");
             this.fout.close();
             this.fin.close();
 

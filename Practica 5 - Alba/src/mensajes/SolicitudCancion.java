@@ -2,6 +2,7 @@ package mensajes;
 
 import java.io.Serializable;
 
+// utilizada tanto en conexiones cliente-servidor como cliente-cliente
 public class SolicitudCancion extends Mensaje {
 
     private final String cancionId;
