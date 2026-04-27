@@ -66,7 +66,9 @@ public class OyenteCliente extends Thread {
                     switch (tipo) {
                         case CONEXION_CS:
                             this.consola.enviar(name + " - Conexión establecida");
-                            fout.writeObject(new ConfirmacionConexion(server, sender));
+                            if (this.servidor.anadirUsuario(sender))
+                                fout.writeObject(new ConfirmacionConexion(server, sender));
+                            else throw new RuntimeException("error al anadir usuario");
                             break;
 
                         case SOLICITUD_LISTA_USUARIOS:
@@ -83,9 +85,12 @@ public class OyenteCliente extends Thread {
                             String cancion = (String) msg.getContent();
                             Usuario propietario = this.servidor.getUsuarioCancion(cancion);
                             receiver = propietario.getUsername();
-                            this.consola.enviar(name + " - Solicitud de conexión: " + sender + " --- " + receiver);
-                            cout = this.servidor.getCanal(receiver);
-                            cout.writeObject(new EmitirCancion(sender, receiver));
+                            if (!sender.equals(receiver)) {
+                                this.consola.enviar(name + " - Solicitud de conexión: " + sender + " --- " + receiver);
+                                cout = this.servidor.getCanal(receiver);
+                                cout.writeObject(new EmitirCancion(sender, receiver));
+                            }
+                            // else el cliente ha pedido una cancion que ya tiene
                             break;
 
                         case PREPARADO_CS:

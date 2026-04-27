@@ -97,6 +97,10 @@ public class Servidor {
         return this.usuarios.leerLista();
     }
 
+    public boolean anadirUsuario(String usuario) throws InterruptedException {
+        return this.usuarios.escribir(new Usuario(usuario, "localhost *"));
+    }
+
     public ArrayList<Cancion> getCanciones() throws InterruptedException {
         return this.canciones.leerLista();
     }

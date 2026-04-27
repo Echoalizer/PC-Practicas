@@ -22,7 +22,6 @@ public class OyenteServidor extends Thread {
     private final ObjectInputStream fin;
     private final ObjectOutputStream fout;
 
-    private int id;
     private String name;
 
     // para controlar accceso a los canales de oyenteServidor y emisor
@@ -66,18 +65,27 @@ public class OyenteServidor extends Thread {
 
                     case RESPUESTA_LISTA_USUARIOS:
                         ArrayList<Usuario> usuarios = (ArrayList<Usuario>) msg.getContent();
-                        consola.enviar(usuarios.toString());
+                        StringBuilder listaUsuarios = new StringBuilder();
+                        for (Usuario u : usuarios) {
+                            listaUsuarios.append(u).append("\n");
+                        }
+                        consola.enviar(listaUsuarios.toString());
                         break;
 
                     case RESPUESTA_LISTA_CANCIONES:
                         ArrayList<Cancion> canciones = (ArrayList<Cancion>) msg.getContent();
-                        consola.enviar(canciones.toString());
+                        StringBuilder listaCanciones = new StringBuilder();
+                        for (Cancion c : canciones) {
+                            listaCanciones.append(c).append("\n");
+                        }
+                        consola.enviar(listaCanciones.toString());
                         break;
 
                     case EMITIR_CANCION:
                         // crear thread emisor
                         // assert receiver == this.name
                         fout.writeObject(new PreparadoCS(name, sender));
+
                         break;
 
                     case PREPARADO_SC:

@@ -33,18 +33,19 @@ public class Usuario implements Serializable {
     }
 
     @Override
-    public int hashCode() {
-
-        return 0;
-    }
-
-    @Override
     public boolean equals(Object obj) {
+        if (obj.getClass() != this.getClass())
+            return false;
         return this.username.equals(((Usuario) obj).username);
     }
 
     @Override
     public String toString() {
-        return String.format("Usuario::%s{%s}", this.username, this.ipAddress);
+        return String.format("%s - %s", this.username, this.ipAddress);
+    }
+
+    @Override
+    public int hashCode() {
+        return this.username.hashCode();
     }
 }

@@ -4,8 +4,8 @@ import java.io.Serializable;
 
 public class Cancion implements Serializable {
     private final String id;
-    private String titulo;
-    private String artista;
+    private final String titulo;
+    private final String artista;
     // esGrupo, fecha, duración
 
     public Cancion(String id, String titulo, String artista) {
@@ -37,6 +37,11 @@ public class Cancion implements Serializable {
 
     @Override
     public String toString() {
-        return String.format("Canción::%s{%s by %s}", this.id, this.titulo, this.artista);
+        return String.format("%s: '%s' by '%s'", this.id, this.titulo, this.artista);
+    }
+
+    @Override
+    public int hashCode() {
+        return this.id.hashCode();
     }
 }
