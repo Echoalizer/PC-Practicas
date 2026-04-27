@@ -1,107 +1,140 @@
 package servidor;
 
-import locks.LockId;
-import mensajes.ConfirmacionConexion;
-import mensajes.Mensaje;
-import mensajes.TipoMensaje;
+import mensajes.*;
+import producersConsumers.SharedBuffer;
+import utils.Cancion;
 import utils.Usuario;
 
+import javax.naming.OperationNotSupportedException;
+import java.io.EOFException;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
+import java.util.ArrayList;
 
 public class OyenteCliente extends Thread {
-
-    private final int id;
     private final String name;
+
     private final Socket s;
+    private final ObjectInputStream fin;
+    private final ObjectOutputStream fout;
 
-    private ObjectInputStream fin;
-    private ObjectOutputStream fout;
+    // el nombre puede ser confuso pero ayuda a la legibilidad en el switch de mensajes
+    private final SharedBuffer consola;
 
-    private Servidor servidor;
-
-    private final LockId logLock;
+    private final Servidor servidor;
 
     // throws IOException ya que si hay algún error, directamente no se crea el objeto
     public OyenteCliente(Socket s, int id, ObjectOutputStream fout, ObjectInputStream fin,
-                         Servidor servidor, LockId lock
+                         SharedBuffer buffer, Servidor srv
     ) throws IOException {
-        this.id = id;
         this.name = "OC" + id;
+
         this.s = s;
         this.fin = fin;
         this.fout = fout;
 
-        this.logLock = lock;
-        this.servidor = servidor;
+        this.consola = buffer;
+        this.servidor = srv;
     }
 
     @Override
     public void run() {
+        boolean continua = true;
 
+        Mensaje msg;
+        String server = "server", sender, receiver;
+        TipoMensaje tipo;
+
+        ObjectOutputStream cout;
+
+        // try externo se encarga de tratar InterruptedException del productor-consumidor
         try {
-            while (true) {
-                Mensaje msg = (Mensaje) fin.readObject();
 
-                //
-                //
+            try {
+                while (continua) {
+                    msg = (Mensaje) fin.readObject();
 
-                TipoMensaje tipo = msg.getTipo();
+                    tipo = msg.getTipo();
+                    sender = msg.getSender();
+                    receiver = msg.getReceiver();
 
-                switch (tipo) {
-                    case CONEXION_CS:
-                        // productor-consumidor para la consola
-                        logLock.takeLock(0);
-                        System.out.println("Se ha establecido conexion con el cliente");
-                        logLock.releaseLock(0);
+                    switch (tipo) {
+                        case CONEXION_CS:
+                            Usuario user = (Usuario) msg.getContent();
+                            this.consola.enviar(name + " - Conexión establecida");
+                            if (!this.servidor.anadirUsuario(user))
+                                this.consola.enviar("El usuario %s ya existe.".formatted(user.getUsername()));
+                            for (Cancion c : user.getCanciones()) {
+                                this.servidor.anadirCancion(c);
+                                this.servidor.update(c.getId(), user);
+                            }
+                            this.servidor.anadirCanal(user.getUsername(), fout);
+                            fout.writeObject(new ConfirmacionConexion(server, sender));
+                            break;
 
-                        // hay que añadir emisor y receptor al mensaje
-                        fout.writeObject(new ConfirmacionConexion());
-                        break;
+                        case SOLICITUD_LISTA_USUARIOS:
+                            ArrayList<Usuario> usuarios = this.servidor.getUsuarios();
+                            fout.writeObject(new RespuestaListaUsuarios(server, sender, usuarios));
+                            break;
 
-                    case SOLICITUD_LISTA_USUARIOS:
-                        break;
+                        case SOLICITUD_LISTA_CANCIONES:
+                            ArrayList<Cancion> canciones = this.servidor.getCanciones();
+                            fout.writeObject(new RespuestaListaCanciones(server, sender, canciones));
+                            break;
 
-                    case SOLICITUD_LISTA_CANCIONES:
-                        break;
+                        case SOLICITUD_CANCION:
+                            String cancion = (String) msg.getContent();
+                            Usuario propietario = this.servidor.getUsuarioCancion(cancion);
+                            if (propietario == null) {
+                                this.consola.enviar("ERROR %s - No existe la cancion %s.".formatted(name, cancion));
+                            } else {
 
-                    case SOLICITUD_CANCION:
-                        Usuario receptor = this.servidor.getUsuarioCancion("");
+                                receiver = propietario.getUsername();
+                                if (!sender.equals(receiver)) {
+                                    this.consola.enviar(name + " - Solicitud de conexión: " + sender + " --- " + receiver);
+                                    cout = this.servidor.getCanal(receiver);
+                                    cout.writeObject(new EmitirCancion(sender, receiver));
+                                }
+                                // else el cliente ha pedido una cancion que ya tiene
+                            }
+                            break;
 
-//                        var fout = this.canales.get(user);
-//                        socketLock.takeLock(0);
-//                        fout.println(mensaje);
-//                        socketLock.releaseLock(0);
+                        case PREPARADO_CS:
+                            String address = (String) msg.getContent();
+                            cout = servidor.getCanal(receiver);
+                            this.consola.enviar(name + " - Se creará conexión:  " + sender + " --- " + receiver);
+                            cout.writeObject(new PreparadoSC(sender, receiver, address));
+                            break;
 
-                        break;
+                        case DESCONEXION_CS:
+                            this.consola.enviar(name + " - Se ha desconectado el cliente");
+                            continua = false;
+                            break;
 
-                    case PREPARADO_CS:
-
-                        break;
-
-                    case DESCONEXION_CS:
-                        logLock.takeLock(0);
-                        System.out.println("Se va a desconectar el cliente");
-                        logLock.releaseLock(0);
-                        // cerrar los canales correspondientes
-                        break;
-
-                    default:
-                        // error: tipo de mensaje no reconocido
-                        break;
+                        default:
+                            throw new OperationNotSupportedException("No existe el tipo de mensaje.");
+                    }
                 }
 
+            } catch (EOFException e) {
+                this.consola.enviar("ERROR %s - El cliente se ha desconectado.".formatted(name));
+            } catch (Exception e) {
+                this.consola.enviar("ERROR %s - %s.".formatted(name, e.getMessage()));
+            } finally {
+                try {
+                    fin.close();
+                    fout.close();
+                    s.close();
+                    this.consola.enviar("DEBUG cerrar ok - %s".formatted(name));
+                } catch (IOException e) {
+                    this.consola.enviar("ERROR No se han podido cerrar las conexiones.");
+                }
             }
-            // close socket, fin, fout
 
-
-        } catch (Exception e) {
+        } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
-
-
     }
-
 }

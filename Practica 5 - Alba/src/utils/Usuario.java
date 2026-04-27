@@ -1,8 +1,8 @@
 package utils;
 
 import java.io.Serializable;
+import java.util.HashSet;
 import java.util.Set;
-import java.util.TreeSet;
 
 public class Usuario implements Serializable {
     private String username;
@@ -13,7 +13,7 @@ public class Usuario implements Serializable {
         this.username = username;
         this.ipAddress = ip;
 
-        this.canciones = new TreeSet<>();
+        this.canciones = new HashSet<>();
     }
 
     public String getUsername() {
@@ -32,19 +32,24 @@ public class Usuario implements Serializable {
         return canciones;
     }
 
-    @Override
-    public int hashCode() {
-
-        return 0;
+    public void addCancion(Cancion cancion) {
+        this.canciones.add(cancion);
     }
 
     @Override
     public boolean equals(Object obj) {
+        if (obj.getClass() != this.getClass())
+            return false;
         return this.username.equals(((Usuario) obj).username);
     }
 
     @Override
     public String toString() {
-        return String.format("Usuario::%s{%s}", this.username, this.ipAddress);
+        return String.format("%s - %s", this.username, this.ipAddress);
+    }
+
+    @Override
+    public int hashCode() {
+        return this.username.hashCode();
     }
 }

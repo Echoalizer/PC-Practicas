@@ -4,13 +4,16 @@ import java.io.Serializable;
 
 public class PreparadoSC extends Mensaje {
 
-    public PreparadoSC(String sender, String receiver) {
+    private final String address;
+
+    public PreparadoSC(String sender, String receiver, String address) {
         super(TipoMensaje.PREPARADO_SC, sender, receiver);
+        this.address = address;
     }
 
     @Override
     public Serializable getContent() {
-        throw new UnsupportedOperationException("Este tipo de mensaje no tiene contenido");
+        return this.address;
     }
 
 }

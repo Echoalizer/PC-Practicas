@@ -1,7 +1,7 @@
 package servidor;
 
-import locks.LockId;
-import locks.LockTicket;
+import cliente.Consola;
+import producersConsumers.SharedBuffer;
 import utils.Cancion;
 import utils.Usuario;
 
@@ -10,6 +10,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.ArrayList;
 import java.util.Scanner;
 
 
@@ -19,55 +20,27 @@ public class Servidor {
 
     private final ListaConcurrente<Usuario> usuarios;
     private final ListaConcurrente<Cancion> canciones;
-    private final MapaCancionesUsuarios canciones_por_usuario;
+    // canciones indexadas por username
+    private final MapaConcurrente<Usuario> canciones_por_usuario;
 
-    // este era para la consola, usar LockTicket en oyenteServidor
-    private final LockId oyenteLock;
+    private final MapaConcurrente<ObjectOutputStream> canales;
 
-//    private final Map<Usuario, ObjectOutputStream> canales;
+    private final SharedBuffer buffer;
+
 
     public Servidor(ServerSocket s) {
         this.srvSocket = s;
 
         this.usuarios = new ListaConcurrente<>();
         this.canciones = new ListaConcurrente<>();
-        this.canciones_por_usuario = new MapaCancionesUsuarios();
+        this.canciones_por_usuario = new MapaConcurrente<>();
 
-        this.oyenteLock = new LockTicket();
+        this.canales = new MapaConcurrente<>();
+
+        this.buffer = new SharedBuffer(2);  // tamaño del buffer
+        new Consola(buffer).start();
     }
 
-    public void run() throws IOException {
-        Socket ss;
-        int k = 0;
-        // permitir parar el bucle
-        while (true) {
-            ss = srvSocket.accept();
-            k++;
-
-            try {
-                ObjectOutputStream fout = new ObjectOutputStream(ss.getOutputStream());
-                ObjectInputStream fin = new ObjectInputStream(ss.getInputStream());
-
-                OyenteCliente oyente = new OyenteCliente(ss, k, fout, fin, this, oyenteLock);
-
-                oyente.start();
-            } catch (IOException e) {
-                System.err.printf("Error al conectar con el cliente: %s\n", e.getMessage());
-            }
-        }
-    }
-
-    public ListaConcurrente<Usuario> getUsuarios() {
-        return this.usuarios;
-    }
-
-    public ListaConcurrente<Cancion> getCanciones() {
-        return this.canciones;
-    }
-
-    public Usuario getUsuarioCancion(String cancion) throws InterruptedException {
-        return this.canciones_por_usuario.leer(cancion);
-    }
 
     public static void main(String[] args) {
 
@@ -78,7 +51,8 @@ public class Servidor {
             puertoServidor = Integer.parseInt(args[0]);
         else {
             System.out.print("Introduce el puerto del servidor: ");
-            puertoServidor = Integer.parseInt(in.nextLine());
+            // no necesitamos usar el buffer de la consola en main porque se ejecuta sin concurrencia
+            puertoServidor = in.nextInt();
         }
 
         in.close();
@@ -86,12 +60,68 @@ public class Servidor {
         try {
             ServerSocket listen = new ServerSocket(puertoServidor);  // nunca se cierra
             Servidor servidor = new Servidor(listen);
-            // proteger con lock
             System.out.println("El servidor se ha creado correctamente.");
+            // no necesitamos usar el buffer de la consola en main porque se ejecuta sin concurrencia
             servidor.run();
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
 
+    public void run() throws IOException {
+        Socket ss;
+        int k = 0;  // concurrente para volver a bajar el numero de cliente
+        // permitir parar el bucle
+        while (true) {
+            ss = srvSocket.accept();
+            k++;
+
+            try {
+                ObjectOutputStream fout = new ObjectOutputStream(ss.getOutputStream());
+                ObjectInputStream fin = new ObjectInputStream(ss.getInputStream());
+
+                OyenteCliente oyente = new OyenteCliente(ss, k, fout, fin, buffer, this);
+
+                oyente.start();
+            } catch (IOException e) {
+                try {
+                    this.buffer.enviar("ERROR Error al conectar con el cliente: %s".formatted(e.getMessage()));
+                } catch (InterruptedException ex) {
+                    System.err.println("Error al almacenar en el buffer de consola!");
+                }
+            }
+        }
+    }
+
+    public ArrayList<Usuario> getUsuarios() throws InterruptedException {
+        return this.usuarios.leerLista();
+    }
+
+    public boolean anadirUsuario(Usuario usuario) throws InterruptedException {
+        return this.usuarios.escribir(usuario);
+    }
+
+    public ArrayList<Cancion> getCanciones() throws InterruptedException {
+        return this.canciones.leerLista();
+    }
+
+    public boolean anadirCancion(Cancion cancion) throws InterruptedException {
+        return this.canciones.escribir(cancion);
+    }
+
+    public Usuario getUsuarioCancion(String cancion) throws InterruptedException {
+        return this.canciones_por_usuario.leer(cancion);
+    }
+
+    public void update(String cancion, Usuario usuario) throws IOException, InterruptedException {
+        this.canciones_por_usuario.escribir(cancion, usuario);
+    }
+
+    public boolean anadirCanal(String username, ObjectOutputStream canal) throws InterruptedException, IOException {
+        return this.canales.escribir(username, canal);
+    }
+
+    public ObjectOutputStream getCanal(String username) throws InterruptedException {
+        return this.canales.leer(username);
+    }
 }
