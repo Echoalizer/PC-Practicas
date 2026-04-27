@@ -102,9 +102,10 @@ public class OyenteCliente extends Thread {
                             break;
 
                         case PREPARADO_CS:
+                            String address = (String) msg.getContent();
                             cout = servidor.getCanal(receiver);
                             this.consola.enviar(name + " - Se creará conexión:  " + sender + " --- " + receiver);
-                            cout.writeObject(new PreparadoSC(sender, receiver));
+                            cout.writeObject(new PreparadoSC(sender, receiver, address));
                             break;
 
                         case DESCONEXION_CS:

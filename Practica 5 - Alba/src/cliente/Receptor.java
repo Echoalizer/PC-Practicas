@@ -5,19 +5,29 @@ import mensajes.TipoMensaje;
 
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.net.Socket;
 
 public class Receptor extends Thread {
 
-    private final ObjectInputStream fin;
-    private final ObjectOutputStream fout;
+    private ObjectInputStream fin;
+    private ObjectOutputStream fout;
 
-    public Receptor(ObjectInputStream fin, ObjectOutputStream fout) {
-        this.fin = fin;
-        this.fout = fout;
+    private final int port;
+
+    public Receptor(String port) {
+        this.port = Integer.parseInt(port);
     }
 
     @Override
     public void run() {
+        try {
+            Socket s = new Socket("localhost", port);
+            this.fout = new ObjectOutputStream(s.getOutputStream());
+            this.fin = new ObjectInputStream(s.getInputStream());
+        } catch (Exception e) {
+            throw new RuntimeException("no se pudo crear Receptor");
+        }
+
         try {
 
             while (true) {
@@ -28,7 +38,7 @@ public class Receptor extends Thread {
 
                 switch (tipo) {
                     case CONFIRMACION_CONEXION:
-                        System.out.println("Se ha establecido conexion con el servidor");
+                        System.out.println("Se ha establecido conexion con el p2p");
                         break;
 
                     case RESPUESTA_CANCION_CC:

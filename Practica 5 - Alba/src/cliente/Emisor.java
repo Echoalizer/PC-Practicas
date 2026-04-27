@@ -5,21 +5,33 @@ import mensajes.TipoMensaje;
 
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.net.ServerSocket;
+import java.net.Socket;
 
 public class Emisor extends Thread {
 
-    private final ObjectInputStream fin;
-    private final ObjectOutputStream fout;
+    private ObjectInputStream fin;
+    private ObjectOutputStream fout;
 
-    public Emisor(ObjectInputStream fin, ObjectOutputStream fout) {
-        this.fin = fin;
-        this.fout = fout;
+    private final int port;
+
+    public Emisor(int port) {
+        this.port = port;
     }
 
     @Override
     public void run() {
-        try {
+        try (ServerSocket listen = new ServerSocket(port)) {
+            System.out.println("POV: no camino");
+            Socket s = listen.accept();
+            System.out.println("que era bromaaaaa");
+            this.fin = new ObjectInputStream(s.getInputStream());
+            this.fout = new ObjectOutputStream(s.getOutputStream());
+        } catch (Exception e) {
+            throw new RuntimeException("no se pudo crear Emisor");
+        }
 
+        try {
             while (true) {
 
                 Mensaje msg = (Mensaje) fin.readObject();

@@ -83,13 +83,17 @@ public class OyenteServidor extends Thread {
 
                     case EMITIR_CANCION:
                         // crear thread emisor
+                        int port = 991;  // magic number
+                        new Emisor(port).start();
                         // assert receiver == this.name --!-- no tenemos el name de Cliente
-                        fout.writeObject(new PreparadoCS(receiver, sender));
+                        fout.writeObject(new PreparadoCS(receiver, sender, "" + port));
 
                         break;
 
                     case PREPARADO_SC:
                         // crear thread receptor
+                        String address = (String) msg.getContent();
+                        new Receptor(address).start();
                         break;
 
                     case DESCONEXION_SC:
