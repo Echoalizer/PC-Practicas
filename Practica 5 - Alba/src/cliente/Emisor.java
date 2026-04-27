@@ -57,7 +57,7 @@ public class Emisor extends Thread {
                         this.fout.writeObject(new RespuestaCancion(null, null, new Cancion("2", "la la la", "yo mismx")));
                         break;
 
-                    case DESCONEXION_CC:
+                    case DESCONEXION:
                         open = false;
                         break;
 

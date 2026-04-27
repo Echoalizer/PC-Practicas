@@ -162,7 +162,7 @@ public class Cliente {
 
                     switch (option) {
                         case 1:
-                            fout.writeObject(new DesconexionCliente(name, ""));
+                            fout.writeObject(new Desconexion(name, ""));
 
                             // Una vez se ha recibido por parte del servidor que se va a desconectar el cliente -> Se cambia de opcion
                             // para asi salir del bucle y cerrar los sockets y tod

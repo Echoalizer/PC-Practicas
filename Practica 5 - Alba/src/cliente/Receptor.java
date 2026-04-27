@@ -52,7 +52,7 @@ public class Receptor extends Thread {
                         System.out.println(cancion);
                         System.out.println("que chula!!! muchas gracias!!!");
 
-                        this.fout.writeObject(new DesconexionCC(null, null));
+                        this.fout.writeObject(new Desconexion(null, null));
                         open = false;
                         break;
 

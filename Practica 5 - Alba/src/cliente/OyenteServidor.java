@@ -96,7 +96,7 @@ public class OyenteServidor extends Thread {
                         new Receptor(address).start();
                         break;
 
-                    case DESCONEXION_SC:
+                    case DESCONEXION:
                         consola.enviar("ERROR Se ha desconectado el servidor.");
                         continua = false;
                         break;

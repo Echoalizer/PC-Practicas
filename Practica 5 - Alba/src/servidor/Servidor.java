@@ -23,7 +23,7 @@ public class Servidor {
     // canciones indexadas por username
     private final MapaConcurrente<Usuario> canciones_por_usuario;
 
-    private final MapaConcurrente<ObjectOutputStream> canales;
+    private final MapaConcurrente<Canal> canales;
 
     private final SharedBuffer buffer;
 
@@ -117,11 +117,11 @@ public class Servidor {
         this.canciones_por_usuario.escribir(cancion, usuario);
     }
 
-    public boolean anadirCanal(String username, ObjectOutputStream canal) throws InterruptedException, IOException {
+    public boolean anadirCanal(String username, Canal canal) throws InterruptedException, IOException {
         return this.canales.escribir(username, canal);
     }
 
-    public ObjectOutputStream getCanal(String username) throws InterruptedException {
+    public Canal getCanal(String username) throws InterruptedException {
         return this.canales.leer(username);
     }
 }

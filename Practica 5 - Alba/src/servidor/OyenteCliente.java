@@ -17,8 +17,8 @@ public class OyenteCliente extends Thread {
     private final String name;
 
     private final Socket s;
-    private final ObjectInputStream fin;
-    private final ObjectOutputStream fout;
+
+    private final Canal canalCliente;
 
     // el nombre puede ser confuso pero ayuda a la legibilidad en el switch de mensajes
     private final SharedBuffer consola;
@@ -32,8 +32,7 @@ public class OyenteCliente extends Thread {
         this.name = "OC" + id;
 
         this.s = s;
-        this.fin = fin;
-        this.fout = fout;
+        this.canalCliente = new Canal(fin, fout);
 
         this.consola = buffer;
         this.servidor = srv;
@@ -47,14 +46,14 @@ public class OyenteCliente extends Thread {
         String server = "server", sender, receiver;
         TipoMensaje tipo;
 
-        ObjectOutputStream cout;
+        Canal cout;
 
         // try externo se encarga de tratar InterruptedException del productor-consumidor
         try {
 
             try {
                 while (continua) {
-                    msg = (Mensaje) fin.readObject();
+                    msg = (Mensaje) canalCliente.read();
 
                     tipo = msg.getTipo();
                     sender = msg.getSender();
@@ -70,18 +69,18 @@ public class OyenteCliente extends Thread {
                                 this.servidor.anadirCancion(c);
                                 this.servidor.update(c.getId(), user);
                             }
-                            this.servidor.anadirCanal(user.getUsername(), fout);
-                            fout.writeObject(new ConfirmacionConexion(server, sender));
+                            this.servidor.anadirCanal(user.getUsername(), canalCliente);
+                            canalCliente.write(new ConfirmacionConexion(server, sender));
                             break;
 
                         case SOLICITUD_LISTA_USUARIOS:
                             ArrayList<Usuario> usuarios = this.servidor.getUsuarios();
-                            fout.writeObject(new RespuestaListaUsuarios(server, sender, usuarios));
+                            canalCliente.write(new RespuestaListaUsuarios(server, sender, usuarios));
                             break;
 
                         case SOLICITUD_LISTA_CANCIONES:
                             ArrayList<Cancion> canciones = this.servidor.getCanciones();
-                            fout.writeObject(new RespuestaListaCanciones(server, sender, canciones));
+                            canalCliente.write(new RespuestaListaCanciones(server, sender, canciones));
                             break;
 
                         case SOLICITUD_CANCION:
@@ -95,7 +94,7 @@ public class OyenteCliente extends Thread {
                                 if (!sender.equals(receiver)) {
                                     this.consola.enviar(name + " - Solicitud de conexión: " + sender + " --- " + receiver);
                                     cout = this.servidor.getCanal(receiver);
-                                    cout.writeObject(new EmitirCancion(sender, receiver));
+                                    cout.write(new EmitirCancion(sender, receiver));
                                 }
                                 // else el cliente ha pedido una cancion que ya tiene
                             }
@@ -105,10 +104,10 @@ public class OyenteCliente extends Thread {
                             String address = (String) msg.getContent();
                             cout = servidor.getCanal(receiver);
                             this.consola.enviar(name + " - Se creará conexión:  " + sender + " --- " + receiver);
-                            cout.writeObject(new PreparadoSC(sender, receiver, address));
+                            cout.write(new PreparadoSC(sender, receiver, address));
                             break;
 
-                        case DESCONEXION_CS:
+                        case DESCONEXION:
                             this.consola.enviar(name + " - Se ha desconectado el cliente");
                             continua = false;
                             break;
@@ -124,8 +123,7 @@ public class OyenteCliente extends Thread {
                 this.consola.enviar("ERROR %s - %s.".formatted(name, e.getMessage()));
             } finally {
                 try {
-                    fin.close();
-                    fout.close();
+                    canalCliente.close();
                     s.close();
                     this.consola.enviar("DEBUG cerrar ok - %s".formatted(name));
                 } catch (IOException e) {
