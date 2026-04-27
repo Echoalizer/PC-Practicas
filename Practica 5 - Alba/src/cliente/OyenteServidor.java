@@ -83,8 +83,8 @@ public class OyenteServidor extends Thread {
 
                     case EMITIR_CANCION:
                         // crear thread emisor
-                        // assert receiver == this.name
-                        fout.writeObject(new PreparadoCS(name, sender));
+                        // assert receiver == this.name --!-- no tenemos el name de Cliente
+                        fout.writeObject(new PreparadoCS(receiver, sender));
 
                         break;
 

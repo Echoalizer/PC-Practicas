@@ -1,8 +1,8 @@
 package utils;
 
 import java.io.Serializable;
+import java.util.HashSet;
 import java.util.Set;
-import java.util.TreeSet;
 
 public class Usuario implements Serializable {
     private String username;
@@ -13,7 +13,7 @@ public class Usuario implements Serializable {
         this.username = username;
         this.ipAddress = ip;
 
-        this.canciones = new TreeSet<>();
+        this.canciones = new HashSet<>();
     }
 
     public String getUsername() {
@@ -30,6 +30,10 @@ public class Usuario implements Serializable {
 
     public Set<Cancion> getCanciones() {
         return canciones;
+    }
+
+    public void addCancion(Cancion cancion) {
+        this.canciones.add(cancion);
     }
 
     @Override

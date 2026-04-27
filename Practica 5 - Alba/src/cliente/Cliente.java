@@ -4,6 +4,8 @@ import locks.LockId;
 import locks.LockTicket;
 import mensajes.*;
 import producersConsumers.SharedBuffer;
+import utils.Cancion;
+import utils.Usuario;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -23,6 +25,7 @@ public class Cliente {
 
     private final SharedBuffer buffer;
 
+    private Usuario self;
     private String name;
 
     public Cliente(Socket s, ObjectOutputStream fout, ObjectInputStream fin, Scanner in) {
@@ -98,11 +101,13 @@ public class Cliente {
 
         // Lo primero que va a hacer el cliente cuando se cree, es mandar un mensaje de que se ha conectado al servidor
         try {
-//            String ip = s.getInetAddress().getHostAddress();
+            String ip = s.getLocalSocketAddress().toString();
             this.buffer.enviar("Introduce tu nombre de usuario: ");
             String username = this.reader.nextLine();
+            this.self = new Usuario(username, ip);
+            self.addCancion(new Cancion("%d".formatted(username.hashCode()), username, username));
             this.name = username;
-            fout.writeObject(new Conexion(username, "server"));
+            fout.writeObject(new Conexion(ip, "server", self));
         } catch (IOException e) {
             try {
                 this.buffer.enviar("ERROR El cliente no ha podido mandar el mensaje de CONEXION");
@@ -151,7 +156,7 @@ public class Cliente {
 
                 buffer.enviar(menu.toString());
 
-                option = reader.nextInt();
+                option = Integer.parseInt(reader.nextLine());
 
                 try {
 
@@ -184,6 +189,9 @@ public class Cliente {
                             System.out.print("Artista: ");
                             String artista = reader.nextLine();
 
+                            // id auto-generado
+                            String idCancion = "" + (titulo.hashCode() + artista.hashCode());
+                            this.self.addCancion(new Cancion(idCancion, titulo, artista));
                         default:
                             break;
                     }

@@ -1,16 +1,21 @@
 package mensajes;
 
+import utils.Usuario;
+
 import java.io.Serializable;
 
 public class Conexion extends Mensaje {
 
-	public Conexion(String sender, String receiver) {
+	private final Usuario user;
+
+	public Conexion(String sender, String receiver, Usuario user) {
 		super(TipoMensaje.CONEXION_CS, sender, receiver);
+		this.user = user;
 	}
 
 	@Override
 	public Serializable getContent() {
-		throw new UnsupportedOperationException("Este tipo de mensaje no tiene contenido");
+		return this.user;
 	}
 
 }

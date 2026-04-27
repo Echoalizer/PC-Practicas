@@ -14,8 +14,6 @@ import java.net.Socket;
 import java.util.ArrayList;
 
 public class OyenteCliente extends Thread {
-
-    private final int id;
     private final String name;
 
     private final Socket s;
@@ -31,7 +29,6 @@ public class OyenteCliente extends Thread {
     public OyenteCliente(Socket s, int id, ObjectOutputStream fout, ObjectInputStream fin,
                          SharedBuffer buffer, Servidor srv
     ) throws IOException {
-        this.id = id;
         this.name = "OC" + id;
 
         this.s = s;
@@ -65,10 +62,16 @@ public class OyenteCliente extends Thread {
 
                     switch (tipo) {
                         case CONEXION_CS:
+                            Usuario user = (Usuario) msg.getContent();
                             this.consola.enviar(name + " - Conexión establecida");
-                            if (this.servidor.anadirUsuario(sender))
-                                fout.writeObject(new ConfirmacionConexion(server, sender));
-                            else throw new RuntimeException("error al anadir usuario");
+                            if (!this.servidor.anadirUsuario(user))
+                                this.consola.enviar("El usuario %s ya existe.".formatted(user.getUsername()));
+                            for (Cancion c : user.getCanciones()) {
+                                this.servidor.anadirCancion(c);
+                                this.servidor.update(c.getId(), user);
+                            }
+                            this.servidor.anadirCanal(user.getUsername(), fout);
+                            fout.writeObject(new ConfirmacionConexion(server, sender));
                             break;
 
                         case SOLICITUD_LISTA_USUARIOS:
@@ -84,13 +87,18 @@ public class OyenteCliente extends Thread {
                         case SOLICITUD_CANCION:
                             String cancion = (String) msg.getContent();
                             Usuario propietario = this.servidor.getUsuarioCancion(cancion);
-                            receiver = propietario.getUsername();
-                            if (!sender.equals(receiver)) {
-                                this.consola.enviar(name + " - Solicitud de conexión: " + sender + " --- " + receiver);
-                                cout = this.servidor.getCanal(receiver);
-                                cout.writeObject(new EmitirCancion(sender, receiver));
+                            if (propietario == null) {
+                                this.consola.enviar("ERROR %s - No existe la cancion %s.".formatted(name, cancion));
+                            } else {
+
+                                receiver = propietario.getUsername();
+                                if (!sender.equals(receiver)) {
+                                    this.consola.enviar(name + " - Solicitud de conexión: " + sender + " --- " + receiver);
+                                    cout = this.servidor.getCanal(receiver);
+                                    cout.writeObject(new EmitirCancion(sender, receiver));
+                                }
+                                // else el cliente ha pedido una cancion que ya tiene
                             }
-                            // else el cliente ha pedido una cancion que ya tiene
                             break;
 
                         case PREPARADO_CS:

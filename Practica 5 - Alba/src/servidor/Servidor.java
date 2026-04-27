@@ -97,16 +97,24 @@ public class Servidor {
         return this.usuarios.leerLista();
     }
 
-    public boolean anadirUsuario(String usuario) throws InterruptedException {
-        return this.usuarios.escribir(new Usuario(usuario, "localhost *"));
+    public boolean anadirUsuario(Usuario usuario) throws InterruptedException {
+        return this.usuarios.escribir(usuario);
     }
 
     public ArrayList<Cancion> getCanciones() throws InterruptedException {
         return this.canciones.leerLista();
     }
 
+    public boolean anadirCancion(Cancion cancion) throws InterruptedException {
+        return this.canciones.escribir(cancion);
+    }
+
     public Usuario getUsuarioCancion(String cancion) throws InterruptedException {
         return this.canciones_por_usuario.leer(cancion);
+    }
+
+    public void update(String cancion, Usuario usuario) throws IOException, InterruptedException {
+        this.canciones_por_usuario.escribir(cancion, usuario);
     }
 
     public boolean anadirCanal(String username, ObjectOutputStream canal) throws InterruptedException, IOException {
