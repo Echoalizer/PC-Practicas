@@ -32,6 +32,7 @@ public class Consola extends Thread {
                 } else if (str.startsWith("ERROR"))
                     err.println(str.substring(6));
                 else out.println(str);
+                // usar print + \n
             } catch (InterruptedException e) {
                 err.println("Error de concurrencia en el controlador");
             }

@@ -22,6 +22,7 @@ public class Cliente {
 
     private Usuario self;
     private String name;
+    private int puerto;
 
     public Cliente(Socket s, ObjectOutputStream fout, ObjectInputStream fin, Scanner in) {
         this.s = s;
@@ -42,7 +43,7 @@ public class Cliente {
         int puertoServidor;
 
         // Hay que crear el nuevo cliente -> Por lo que hay que pedir su info y crear el oyenteServidor
-        if (args.length > 0) {
+        if (args.length > 1) {
             IPServidor = args[0];
             puertoServidor = Integer.parseInt(args[1]);
         } else {
@@ -80,11 +81,11 @@ public class Cliente {
     // hace de productor al enviar mensajes a la consola
     public void run() {
         try {
-            OyenteServidor oyente = new OyenteServidor(fout, fin, consola);
+            OyenteServidor oyente = new OyenteServidor(fout, fin, consola, puerto);
             oyente.start();
         } catch (IOException e) {
             try {
-                this.consola.enviar("se ha producido un error: %s".formatted(e.getMessage()));
+                this.consola.enviar("se ha producido un error: %s\n".formatted(e.getMessage()));
             } catch (InterruptedException ex) {
                 throw new RuntimeException(ex);
             }
@@ -101,7 +102,7 @@ public class Cliente {
             fout.writeObject(new Conexion(ip, "server", self));
         } catch (IOException e) {
             try {
-                this.consola.enviar("ERROR El cliente no ha podido mandar el mensaje de CONEXION");
+                this.consola.enviar("ERROR El cliente no ha podido mandar el mensaje de CONEXION\n");
             } catch (InterruptedException ex) {
                 throw new RuntimeException(ex);
             }
@@ -181,7 +182,7 @@ public class Cliente {
 //                            String idCancion = "" + (titulo.hashCode() + artista.hashCode());
 //                            this.self.addCancion(new Cancion(idCancion, titulo, artista));
                         default:
-                            // controlar opciones no disopnibles
+                            // controlar opciones no disponibles
                             break;
                     }
 

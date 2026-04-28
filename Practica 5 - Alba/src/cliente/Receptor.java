@@ -17,10 +17,12 @@ public class Receptor extends Thread {
     SharedBuffer consola;
 
     private final int port;
+    private final String idCancion;
 
-    public Receptor(String port, SharedBuffer buffer) {
+    public Receptor(String port, SharedBuffer buffer, String idCancion) {
         this.port = Integer.parseInt(port);
         this.consola = buffer;
+        this.idCancion = idCancion;
     }
 
     @Override
@@ -48,13 +50,14 @@ public class Receptor extends Thread {
                     case CONFIRMACION_CONEXION:
                         consola.enviar("Se ha establecido la conexion p2p");
                         // no tenemos id cancion
-                        this.fout.writeObject(new SolicitudCancion(null, null, null));
+                        this.fout.writeObject(new SolicitudCancion(null, null, idCancion));
                         break;
 
                     case RESPUESTA_CANCION_CC:
                         Cancion cancion = (Cancion) msg.getContent();
                         consola.enviar("DEBUG" + cancion);
-
+                        // guardar cancion en el usuario
+                        // y actualizar en serv
                         this.fout.writeObject(new Desconexion(null, null));
                         open = false;
                         break;

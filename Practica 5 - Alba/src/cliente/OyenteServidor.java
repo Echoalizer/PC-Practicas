@@ -20,13 +20,15 @@ public class OyenteServidor extends Thread {
     private final SharedBuffer consola;
 
     private String name;
+    private int puerto;
 
     // throws IOException ya que si hay algún error, directamente no se crea el objeto
-    public OyenteServidor(ObjectOutputStream fout, ObjectInputStream fin, SharedBuffer buffer) throws IOException {
+    public OyenteServidor(ObjectOutputStream fout, ObjectInputStream fin, SharedBuffer buffer, int puerto) throws IOException {
         this.fin = fin;
         this.fout = fout;
 
         this.consola = buffer;
+        this.puerto = puerto;
     }
 
     @Override
@@ -74,16 +76,16 @@ public class OyenteServidor extends Thread {
                         break;
 
                     case EMITIR_CANCION:
-                        int port = 991;  // magic number
-                        new Emisor(port, consola).start();
+                        new Emisor(puerto, consola).start();
                         // assert receiver == this.name --!-- no tenemos el name de Cliente
-                        fout.writeObject(new PreparadoCS(receiver, sender, "" + port));
+                        fout.writeObject(new PreparadoCS(receiver, sender, "" + puerto));
 
                         break;
 
                     case PREPARADO_SC:
                         String address = (String) msg.getContent();
-                        new Receptor(address, consola).start();
+                        // añadir id de cancion
+                        new Receptor(address, consola, "").start();
                         break;
 
                     case DESCONEXION:

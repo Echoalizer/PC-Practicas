@@ -3,7 +3,6 @@ package concurrent;
 import readersWriters.ReadWriteController;
 import readersWriters.SyncRWMonitor;
 
-import java.io.IOException;
 import java.util.HashMap;
 
 
@@ -19,7 +18,7 @@ public class MapaConcurrente<T> {
         valores = new HashMap<>();
     }
 
-    public boolean escribir(String key, T valor) throws InterruptedException, IOException {
+    public boolean escribir(String key, T valor) throws InterruptedException {
         boolean insertado = false;
         controller.request_write();
         if (!valores.containsKey(key)) {

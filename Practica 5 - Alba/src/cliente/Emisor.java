@@ -28,7 +28,7 @@ public class Emisor extends Thread {
     }
 
     @Override
-    public void run() {
+    public void run() {  // que pasa si dos clientes piden dato
         try (ServerSocket listen = new ServerSocket(port)) {
             Socket s = listen.accept();
             this.fin = new ObjectInputStream(s.getInputStream());
@@ -48,14 +48,15 @@ public class Emisor extends Thread {
 
                 switch (tipo) {
                     case CONEXION_CC:
-                        consola.enviar("Se ha establecido la conexion p2p");
-                        this.fout.writeObject(new ConfirmacionConexion(null, null));
+                        consola.enviar("Se ha establecido la conexion p2p.\n");
+                        this.fout.writeObject(new ConfirmacionConexion(null, null, 0));
                         break;
 
                     case SOLICITUD_CANCION:
                         // obtener id
+                        String id = (String) msg.getContent();
 //                        Cancion c = user.get(id);
-                        consola.enviar("DEBUG envio de cancion");
+                        consola.enviar("DEBUG envio de cancion\n");
                         this.fout.writeObject(new RespuestaCancion(null, null, new Cancion("215", "Hello", "Adele")));
                         break;
 
@@ -68,7 +69,7 @@ public class Emisor extends Thread {
 
                 }
             }
-            consola.enviar("DEBUG Finalizada conexion p2p");
+            consola.enviar("DEBUG Finalizada conexion p2p.\n");
             this.fout.close();
             this.fin.close();
 

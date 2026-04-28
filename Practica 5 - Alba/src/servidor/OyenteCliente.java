@@ -46,7 +46,7 @@ public class OyenteCliente extends Thread {
         String server = "server", sender, receiver;
         TipoMensaje tipo;
 
-        Canal cout;
+        Canal canal;
 
         // try externo se encarga de tratar InterruptedException del productor-consumidor
         try {
@@ -70,7 +70,8 @@ public class OyenteCliente extends Thread {
                                 this.servidor.update(c.getId(), user);
                             }
                             this.servidor.anadirCanal(user.getUsername(), canalCliente);
-                            canalCliente.write(new ConfirmacionConexion(server, sender));
+                            int puerto = 0;
+                            canalCliente.write(new ConfirmacionConexion(server, sender, puerto));
                             break;
 
                         case SOLICITUD_LISTA_USUARIOS:
@@ -93,18 +94,18 @@ public class OyenteCliente extends Thread {
                                 receiver = propietario.getUsername();
                                 if (!sender.equals(receiver)) {
                                     this.consola.enviar(name + " - Solicitud de conexión: " + sender + " --- " + receiver);
-                                    cout = this.servidor.getCanal(receiver);
-                                    cout.write(new EmitirCancion(sender, receiver));
+                                    canal = this.servidor.getCanal(receiver);
+                                    canal.write(new EmitirCancion(sender, receiver));
                                 }
                                 // else el cliente ha pedido una cancion que ya tiene
                             }
                             break;
 
                         case PREPARADO_CS:
-                            String address = (String) msg.getContent();
-                            cout = servidor.getCanal(receiver);
+                            String address = (String) msg.getContent();  // address = puerto
+                            canal = servidor.getCanal(receiver);
                             this.consola.enviar(name + " - Se creará conexión:  " + sender + " --- " + receiver);
-                            cout.write(new PreparadoSC(sender, receiver, address));
+                            canal.write(new PreparadoSC(sender, receiver, address));
                             break;
 
                         case DESCONEXION:
