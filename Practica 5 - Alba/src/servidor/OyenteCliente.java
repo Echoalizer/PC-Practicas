@@ -11,12 +11,12 @@ import java.io.EOFException;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.io.Serializable;
 import java.net.Socket;
 import java.util.ArrayList;
 
 public class OyenteCliente extends Thread {
     private final String name;
+    private final int id;
 
     private final Socket s;
     private final Canal canalCliente;
@@ -31,6 +31,7 @@ public class OyenteCliente extends Thread {
                          SharedBuffer buffer, Servidor srv
     ) throws IOException {
         this.name = "OC" + id;
+        this.id = id;
 
         this.s = s;
         this.canalCliente = new Canal(fout, fin);
@@ -71,8 +72,8 @@ public class OyenteCliente extends Thread {
                                 this.servidor.update(c.getId(), user);
                             }
                             this.servidor.anadirCanal(user.getUsername(), canalCliente);
-                            int puerto = 0;
-                            canalCliente.write(new ConfirmacionConexion(server, sender, puerto));
+//                            int puerto = 991;
+                            canalCliente.write(new ConfirmacionConexion(server, sender));
                             break;
 
                         case SOLICITUD_LISTA_USUARIOS:
@@ -96,17 +97,20 @@ public class OyenteCliente extends Thread {
                                 if (!sender.equals(receiver)) {
                                     this.consola.enviar(name + " - Solicitud de conexión: " + sender + " --- " + receiver);
                                     canal = this.servidor.getCanal(receiver);
-                                    canal.write(new EmitirCancion(sender, receiver));
+                                    String puerto = servidor.getPuerto(id);
+                                    canal.write(new EmitirCancion(sender, receiver, puerto, cancion));
                                 }
                                 // else el cliente ha pedido una cancion que ya tiene
                             }
                             break;
 
                         case PREPARADO_CS:
-                            String address = (String) msg.getContent();  // address = puerto
+                            Mensaje.Content content = (Mensaje.Content) msg.getContent();
+                            String address = content.getAddress();  // address = puerto
+
                             canal = servidor.getCanal(receiver);
                             this.consola.enviar(name + " - Se creará conexión:  " + sender + " --- " + receiver);
-                            canal.write(new PreparadoSC(sender, receiver, address));
+                            canal.write(new PreparadoSC(sender, receiver, address, content.getId()));
                             break;
 
                         case ACTUALIZAR_CANC_RECEPTOR:
@@ -117,9 +121,8 @@ public class OyenteCliente extends Thread {
                         	Cancion c = (Cancion) msg.getContent();
                         	Usuario usuarioReceptor = servidor.getUsuario(sender);
                         	servidor.update(c.getId(), usuarioReceptor);
-                        	
-                            canal = servidor.getCanal(receiver);
-                        	canal.write(new ConfirmacionActualizacionCanc(server, sender));
+
+                            canalCliente.write(new ConfirmacionActualizacionCanc(server, sender));
                         	break;
                             
                             
@@ -127,23 +130,22 @@ public class OyenteCliente extends Thread {
                         	this.consola.enviar("Se va a comprobar si el servidor tiene ya esa cancion\n");
                         	Cancion canc = (Cancion) msg.getContent();
                         	boolean exist = servidor.checkCancion(canc.getId());
-                        	
-                        	canal = servidor.getCanal(receiver);
+
+                            canal = servidor.getCanal(sender);
                         	if(!exist) {
                         		this.consola.enviar("La cancion no existe en el servidor, asi que se va a introducir a continuacion\n");
                         		servidor.anadirCancion(canc);
                         		
                         		Usuario u = servidor.getUsuario(sender);
                             	servidor.update(canc.getId(), u);
-                            	canal.write(new RespuestaComprobacionCancionSC(canc, server, sender));
+                                canalCliente.write(new RespuestaComprobacionCancionSC(canc, server, sender));
 
-                        		
                         	}
                         	else {
                         		this.consola.enviar("ERROR: La cancion ya existia en el servidor\n");
+                                // enviamos una objeto cancion falso
                         		Cancion cancError = new Cancion("error", null, null); 
                             	canal.write(new RespuestaComprobacionCancionSC(cancError, server, sender));
-
                         		
                         	}
                         	break;
@@ -154,7 +156,7 @@ public class OyenteCliente extends Thread {
                             break;
 
                         default:
-                            throw new OperationNotSupportedException("No existe el tipo de mensaje.");
+                            throw new OperationNotSupportedException("No existe el tipo de mensaje: %s.".formatted(tipo));
                     }
                 }
 

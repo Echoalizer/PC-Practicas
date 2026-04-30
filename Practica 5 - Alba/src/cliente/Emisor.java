@@ -9,6 +9,7 @@ import utils.Cancion;
 import utils.Usuario;
 
 import javax.naming.OperationNotSupportedException;
+import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.ServerSocket;
@@ -54,7 +55,7 @@ public class Emisor extends Thread {
                 switch (tipo) {
                     case CONEXION_CC:
                         consola.enviar("Se ha establecido la conexion p2p.\n");
-                        this.fout.writeObject(new ConfirmacionConexion(null, null, 0));
+                        this.fout.writeObject(new ConfirmacionConexion(null, null));
                         break;
 
                     case SOLICITUD_CANCION:
@@ -92,11 +93,17 @@ public class Emisor extends Thread {
                 }
             }
             consola.enviar("DEBUG Finalizada conexion p2p.\n");
-            this.fout.close();
-            this.fin.close();
+
 
         } catch (Exception e) {
             throw new RuntimeException(e);
+        } finally {
+            try {
+                this.fout.close();
+                this.fin.close();
+            } catch (IOException e) {
+                // q pena
+            }
         }
     }
 

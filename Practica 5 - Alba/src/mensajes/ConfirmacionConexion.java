@@ -4,16 +4,17 @@ import java.io.Serializable;
 
 public class ConfirmacionConexion extends Mensaje {
 
-    private int puerto;
+//    private final int puerto;
 
-    public ConfirmacionConexion(String sender, String receiver, int puerto) {
+    public ConfirmacionConexion(String sender, String receiver) {
         super(TipoMensaje.CONFIRMACION_CONEXION, sender, receiver);
-        this.puerto = puerto;
+//        this.puerto = puerto;
     }
 
     @Override
     public Serializable getContent() {
-        return this.puerto;
+//        return this.puerto;
+        throw new UnsupportedOperationException("Este tipo de mensaje no tiene contenido");
     }
 
 }

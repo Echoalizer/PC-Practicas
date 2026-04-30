@@ -1,9 +1,6 @@
 package servidor;
 
-import concurrent.Canal;
-import concurrent.Consola;
-import concurrent.ListaConcurrente;
-import concurrent.MapaConcurrente;
+import concurrent.*;
 import producersConsumers.SharedBuffer;
 import utils.Cancion;
 import utils.Usuario;
@@ -26,9 +23,11 @@ public class Servidor {
     private final ListaConcurrente<Usuario> usuarios;
     private final ListaConcurrente<Cancion> canciones;
     // canciones indexadas por username
-    private final MapaConcurrente<Usuario> canciones_por_usuario;
+    private final MapaConcurrente<ArrayList<Usuario>> canciones_por_usuario;
 
     private final MapaConcurrente<Canal> canales;
+
+    private final ArrayList<LockedString> puertos;
 
 
     public Servidor(ServerSocket s) {
@@ -151,11 +150,13 @@ public class Servidor {
     }
 
     public Usuario getUsuarioCancion(String cancion) throws InterruptedException {
-        return this.canciones_por_usuario.leer(cancion);
+        var lista = this.getUsuarioCancion(cancion);
+        ;
+//        return this.canciones_por_usuario.leer(cancion);
     }
 
     public void update(String cancion, Usuario usuario) throws IOException, InterruptedException {
-        this.canciones_por_usuario.escribir(cancion, usuario);
+//        this.canciones_por_usuario.escribir(cancion, usuario);
     }
 
     public boolean anadirCanal(String username, Canal canal) throws InterruptedException, IOException {

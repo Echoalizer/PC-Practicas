@@ -8,6 +8,23 @@ import java.io.Serializable;
 public abstract class Mensaje implements Serializable {
 
 	//	private static final long serialVersionUID = 1L;
+	public class Content implements Serializable {
+		private final String address;
+		private final String id;
+
+		public Content(String address, String id) {
+			this.address = address;
+			this.id = id;
+		}
+
+		public String getAddress() {
+			return address;
+		}
+
+		public String getId() {
+			return id;
+		}
+	}
 
 	// Header
 	private final TipoMensaje TipoMensaje;

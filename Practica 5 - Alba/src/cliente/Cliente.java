@@ -12,6 +12,7 @@ import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.util.Scanner;
 
+
 public class Cliente {
     private final Socket s;
     private final ObjectOutputStream fout;
@@ -22,7 +23,8 @@ public class Cliente {
 
     private Usuario self;
     private String name;
-    private int puerto;
+
+    protected static volatile boolean running = true;
 
     public Cliente(Socket s, ObjectOutputStream fout, ObjectInputStream fin, Scanner in) {
         this.s = s;
@@ -81,24 +83,18 @@ public class Cliente {
     // hace de productor al enviar mensajes a la consola
     public void run() {
         try {
-            OyenteServidor oyente = new OyenteServidor(fout, fin, consola, puerto, self);
-            oyente.start();
-        } catch (IOException e) {
-            try {
-                this.consola.enviar("se ha producido un error: %s\n".formatted(e.getMessage()));
-            } catch (InterruptedException ex) {
-                throw new RuntimeException(ex);
-            }
-        }
-
-        // Lo primero que va a hacer el cliente cuando se cree, es mandar un mensaje de que se ha conectado al servidor
-        try {
             String ip = s.getLocalSocketAddress().toString();
             this.consola.enviar("Introduce tu nombre de usuario: ");
             String username = this.reader.nextLine();
             this.self = new Usuario(username, ip);
-            self.addCancion(new Cancion("%d".formatted(username.hashCode()), username, username));
+            self.addCancion(new Cancion("%d".formatted(2 * username.hashCode()), username, username));
             this.name = username;
+
+            // comprobar que no se envia el mensaje antes de terminmar de crear oyente
+            OyenteServidor oyente = new OyenteServidor(fout, fin, consola, self);
+            oyente.start();
+
+            // Lo primero que va a hacer el cliente cuando se cree, es mandar un mensaje de que se ha conectado al servidor
             fout.writeObject(new Conexion(ip, "server", self));
         } catch (IOException e) {
             try {
@@ -142,16 +138,16 @@ public class Cliente {
                 menu.append("Escoge una de las opciones: ").append("\n");
                 menu.append("1. DESCONEXION CLIENTE").append("\n");
                 menu.append("2. LISTA USUARIOS").append("\n");
-                menu.append("3. LISTA CANCIONES").append("\n");
-                menu.append("4. SOLICITAR CANCION").append("\n");
-                menu.append("5. AÑADIR CANCION").append("\n");
+                menu.append("3. LISTA CANCIONES SERVER").append("\n");
+                menu.append("4. LISTA CANCIONES PROPIAS").append("\n");
+                menu.append("5. SOLICITAR CANCION").append("\n");
+                menu.append("6. AÑADIR CANCION").append("\n");
+                menu.append("\n");
 
                 consola.enviar(menu.toString());
 
-                option = Integer.parseInt(reader.nextLine());
-                // controlar error de parseo
-
                 try {
+                    option = Integer.parseInt(reader.nextLine());
 
                     switch (option) {
                         case 1:
@@ -160,6 +156,7 @@ public class Cliente {
                             // Una vez se ha recibido por parte del servidor que se va a desconectar el cliente -> Se cambia de opcion
                             // para asi salir del bucle y cerrar los sockets y tod
                             option = -1;
+                            running = false;
                             break;
                         case 2:
                             fout.writeObject(new SolicitudListaUsuarios(name, "server"));
@@ -168,12 +165,16 @@ public class Cliente {
                             fout.writeObject(new SolicitudListaCanciones(name, "server"));
                             break;
                         case 4:
+                            consola.enviar("Lista de canciones propias: \n");
+                            consola.enviar(self.getCanciones().toString() + "\n\n");
+                            break;
+                        case 5:
                             consola.enviar("Id de la cancion: ");
                             String id = reader.nextLine();
                             fout.writeObject(new SolicitudCancion(name, null, id)); // receiver null porque va dirigido a un cliente que aun no conocemos
                             break;
-                        case 5:
-                        	consola.enviar("Titulo: ");
+                        case 6:
+                            consola.enviar("Titulo: ");
                             String titulo = reader.nextLine();
                             consola.enviar("Artista: ");
                             String artista = reader.nextLine();
@@ -183,21 +184,25 @@ public class Cliente {
                             Cancion c = new Cancion(idCancion, titulo, artista);
                             fout.writeObject(new ComprobarCancionCS(c, name, "server"));
                             break;
-                            
+
                         default:
-                            // controlar opciones no disponibles
+//                            consola.enviar("No amorch lee bien... Numeros del 1 al 6\n");
+                            // opción sin funcionalidad asignada
                             break;
                     }
 
+                } catch (NumberFormatException e) {
+                    consola.enviar("Amorch un NUMEROOOO!!\n");
+                    option = 0;
                 } catch (IOException e) {
-                    consola.enviar("ERROR se ha producido un error: %s".formatted(e.getMessage()));
+                    consola.enviar("ERROR se ha producido un error: %s\n".formatted(e.getMessage()));
                 }
             }
 
             try {
                 reader.close();
             } catch (Exception e) {
-                consola.enviar("ERROR no se pudo cerrar el scanner");
+                consola.enviar("ERROR no se pudo cerrar el scanner\n");
                 throw new RuntimeException(e);
             }
 

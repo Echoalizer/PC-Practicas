@@ -10,7 +10,7 @@ public class Consola extends Thread {
     private final PrintStream out = System.out;
     private final PrintStream err = System.err;
 
-    private boolean debug = false;
+    private boolean debug = true;
 
     public Consola(SharedBuffer buffer) {
         this.buffer = buffer;

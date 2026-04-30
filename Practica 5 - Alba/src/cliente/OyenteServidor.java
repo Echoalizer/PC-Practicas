@@ -27,23 +27,19 @@ public class OyenteServidor extends Thread {
  
 
     // throws IOException ya que si hay algún error, directamente no se crea el objeto
-    public OyenteServidor(ObjectOutputStream fout, ObjectInputStream fin, SharedBuffer buffer, int puerto, Usuario self) throws IOException {
+    public OyenteServidor(ObjectOutputStream fout, ObjectInputStream fin, SharedBuffer buffer, Usuario self) throws IOException {
         this.fin = fin;
         this.fout = fout;
 
         this.consola = buffer;
-        this.puerto = puerto;
         
         this.self = self;
-        
-        //Donde se inicializa name?
-        
+//        this.name = self.getUsername();
     }
 
     @Override
     public void run() {
         boolean continua = true;
-        boolean listening = true;  // dependiente del thread Cliente.run()
 
         Mensaje msg;
         String server = "server", sender = name, receiver;
@@ -51,7 +47,7 @@ public class OyenteServidor extends Thread {
 
         try {
 
-            while (listening && continua) {
+            while (Cliente.running && continua) {
 
                 msg = (Mensaje) fin.readObject();
 
@@ -61,6 +57,7 @@ public class OyenteServidor extends Thread {
 
                 switch (tipo) {
                     case CONFIRMACION_CONEXION:
+                        puerto = (int) msg.getContent();
                         consola.enviar("Se ha establecido conexion con el servidor");
                         break;
 
@@ -85,24 +82,25 @@ public class OyenteServidor extends Thread {
                         break;
 
                     case EMITIR_CANCION:
+                        String id = (String) msg.getContent();
                         new Emisor(puerto, consola, self).start();
                         // assert receiver == this.name --!-- no tenemos el name de Cliente
-                        fout.writeObject(new PreparadoCS(receiver, sender, "" + puerto));
+                        fout.writeObject(new PreparadoCS(receiver, sender, "" + puerto, id));
 
                         break;
 
                     case PREPARADO_SC:
-                        String address = (String) msg.getContent();
-                        // añadir id de cancion
-                        boolean before = self.checkCancion(address);
-                        new Receptor(address, consola, "", self).start();                        
-                        boolean after = self.checkCancion(address);
+                        Mensaje.Content content = (Mensaje.Content) msg.getContent();
+
+                        boolean before = self.checkCancion(content.getId());
+                        new Receptor(content.getAddress(), consola, content.getId(), self).start();
+                        boolean after = self.checkCancion(content.getId());  // revisar
                         
                         if(!before && after) {
                         	//Aqui tendria que hacerse lo de nueva cancion??
-                        	Cancion c = self.getCancion(address);
+                            Cancion c = self.getCancion(content.getId());
                         	//Se manda al servidor un mensaje de que se quiere actualizar las canciones del cliente
-                        	fout.writeObject(new ActualizarCancReceptor(sender, server,c ));
+                            fout.writeObject(new ActualizarCancReceptor(sender, server, c));
                         }
                         break;
 
@@ -126,22 +124,26 @@ public class OyenteServidor extends Thread {
                     		
                     		this.consola.enviar("La cancion se añadio correctamente tanto al cliente como al servidor");
                     	}
-                    		
-                        
+                        break;
+
                     default:
-                        throw new OperationNotSupportedException("No existe el tipo de mensaje.");
+                        throw new OperationNotSupportedException("No existe el tipo de mensaje: %s.".formatted(tipo));
                 }
 
             }
-            try {  // en finally?
-                fin.close();
-                fout.close();
-            } catch (IOException e) {
-                consola.enviar("ERROR no se pudo cerrar el socket");
+            if (!Cliente.running) {
+                consola.enviar("BuEnooOOoOoooOOoo.");
             }
 
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException(e.getMessage());
+        } finally {
+            try {
+                fin.close();
+                fout.close();
+            } catch (IOException e) {
+                // no se pudo cerrar socket
+            }
         }
     }
 }

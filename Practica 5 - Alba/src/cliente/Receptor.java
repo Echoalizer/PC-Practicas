@@ -37,7 +37,7 @@ public class Receptor extends Thread {
             this.fout = new ObjectOutputStream(s.getOutputStream());
             this.fin = new ObjectInputStream(s.getInputStream());
         } catch (Exception e) {
-            throw new RuntimeException("no se pudo crear Receptor");
+            throw new RuntimeException("no se pudo crear Receptor: %s".formatted(e.getMessage()));
         }
 
         try {
