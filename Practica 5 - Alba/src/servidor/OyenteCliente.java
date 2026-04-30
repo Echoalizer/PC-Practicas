@@ -11,6 +11,7 @@ import java.io.EOFException;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.io.Serializable;
 import java.net.Socket;
 import java.util.ArrayList;
 
@@ -108,6 +109,45 @@ public class OyenteCliente extends Thread {
                             canal.write(new PreparadoSC(sender, receiver, address));
                             break;
 
+                        case ACTUALIZAR_CANC_RECEPTOR:
+                        	this.consola.enviar("Se esta actualizando el servidor\n");
+                        	
+                        	//En este punto, se asume que la cancion ya esta dentro de los usuarios receptor y emisor, por lo que no hay que comprobar aqui nada, simplemente
+                        	//hay que agregar dicha cancion al cliente receptor
+                        	Cancion c = (Cancion) msg.getContent();
+                        	Usuario usuarioReceptor = servidor.getUsuario(sender);
+                        	servidor.update(c.getId(), usuarioReceptor);
+                        	
+                            canal = servidor.getCanal(receiver);
+                        	canal.write(new ConfirmacionActualizacionCanc(server, sender));
+                        	break;
+                            
+                            
+                        case COMPROBAR_CANCION_CS:
+                        	this.consola.enviar("Se va a comprobar si el servidor tiene ya esa cancion\n");
+                        	Cancion canc = (Cancion) msg.getContent();
+                        	boolean exist = servidor.checkCancion(canc.getId());
+                        	
+                        	canal = servidor.getCanal(receiver);
+                        	if(!exist) {
+                        		this.consola.enviar("La cancion no existe en el servidor, asi que se va a introducir a continuacion\n");
+                        		servidor.anadirCancion(canc);
+                        		
+                        		Usuario u = servidor.getUsuario(sender);
+                            	servidor.update(canc.getId(), u);
+                            	canal.write(new RespuestaComprobacionCancionSC(canc, server, sender));
+
+                        		
+                        	}
+                        	else {
+                        		this.consola.enviar("ERROR: La cancion ya existia en el servidor\n");
+                        		Cancion cancError = new Cancion("error", null, null); 
+                            	canal.write(new RespuestaComprobacionCancionSC(cancError, server, sender));
+
+                        		
+                        	}
+                        	break;
+                        
                         case DESCONEXION:
                             this.consola.enviar(name + " - Se ha desconectado el cliente");
                             continua = false;

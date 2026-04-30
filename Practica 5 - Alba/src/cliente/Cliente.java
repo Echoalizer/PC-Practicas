@@ -81,7 +81,7 @@ public class Cliente {
     // hace de productor al enviar mensajes a la consola
     public void run() {
         try {
-            OyenteServidor oyente = new OyenteServidor(fout, fin, consola, puerto);
+            OyenteServidor oyente = new OyenteServidor(fout, fin, consola, puerto, self);
             oyente.start();
         } catch (IOException e) {
             try {
@@ -172,15 +172,18 @@ public class Cliente {
                             String id = reader.nextLine();
                             fout.writeObject(new SolicitudCancion(name, null, id)); // receiver null porque va dirigido a un cliente que aun no conocemos
                             break;
-//                        case 5:
-//                            consola.enviar("Titulo: ");
-//                            String titulo = reader.nextLine();
-//                            consola.enviar("Artista: ");
-//                            String artista = reader.nextLine();
-//
+                        case 5:
+                        	consola.enviar("Titulo: ");
+                            String titulo = reader.nextLine();
+                            consola.enviar("Artista: ");
+                            String artista = reader.nextLine();
 //                            // id auto-generado
-//                            String idCancion = "" + (titulo.hashCode() + artista.hashCode());
-//                            this.self.addCancion(new Cancion(idCancion, titulo, artista));
+                            String idCancion = "" + (titulo.hashCode() + artista.hashCode());
+                            //Hay que comprobar que esa cancion no este ya en el servidor 
+                            Cancion c = new Cancion(idCancion, titulo, artista);
+                            fout.writeObject(new ComprobarCancionCS(c, name, "server"));
+                            break;
+                            
                         default:
                             // controlar opciones no disponibles
                             break;

@@ -100,6 +100,43 @@ public class Servidor {
     public ArrayList<Usuario> getUsuarios() throws InterruptedException {
         return this.usuarios.leerLista();  // re-throw
     }
+    
+    
+    //Metodo necesario para cuando queremos actualizar canciones_por_usuario
+    public Usuario getUsuario(String name) {
+    	Usuario sol = null;
+    	
+    	try {
+			for (Usuario s : usuarios.leerLista() ) {
+			    if (s.getUsername().equals(name)) {
+			        sol = s;
+			        break; 
+			    }
+			}
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+    	
+    	return sol;
+    }
+    
+    
+    public boolean checkCancion(String id) {
+    	boolean exist = false;
+    	
+    	try {
+			for (Cancion c : canciones.leerLista() ) {
+			    if (c.getId().equals(id)) {
+			        exist = true;
+			        break; 
+			    }
+			}
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+    	
+    	return exist;
+    }
 
     public boolean anadirUsuario(Usuario usuario) throws InterruptedException {
         return this.usuarios.escribir(usuario);  // re-throw

@@ -3,6 +3,7 @@ package cliente;
 import mensajes.*;
 import producersConsumers.SharedBuffer;
 import utils.Cancion;
+import utils.Usuario;
 
 import javax.naming.OperationNotSupportedException;
 import java.io.ObjectInputStream;
@@ -19,10 +20,14 @@ public class Receptor extends Thread {
     private final int port;
     private final String idCancion;
 
-    public Receptor(String port, SharedBuffer buffer, String idCancion) {
+    private Usuario self;
+    
+    public Receptor(String port, SharedBuffer buffer, String idCancion, Usuario self) {
         this.port = Integer.parseInt(port);
         this.consola = buffer;
         this.idCancion = idCancion;
+        this.self = self;
+         
     }
 
     @Override
@@ -57,7 +62,8 @@ public class Receptor extends Thread {
                         Cancion cancion = (Cancion) msg.getContent();
                         consola.enviar("DEBUG" + cancion);
                         // guardar cancion en el usuario
-                        // y actualizar en serv
+                        self.addCancion(cancion);                        
+                        
                         this.fout.writeObject(new Desconexion(null, null));
                         open = false;
                         break;

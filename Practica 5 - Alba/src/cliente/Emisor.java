@@ -6,6 +6,7 @@ import mensajes.RespuestaCancion;
 import mensajes.TipoMensaje;
 import producersConsumers.SharedBuffer;
 import utils.Cancion;
+import utils.Usuario;
 
 import javax.naming.OperationNotSupportedException;
 import java.io.ObjectInputStream;
@@ -20,11 +21,15 @@ public class Emisor extends Thread {
 
     SharedBuffer consola;
 
+	private Usuario self;
+	
     private final int port;
 
-    public Emisor(int port, SharedBuffer buffer) {
+    public Emisor(int port, SharedBuffer buffer, Usuario self) {
         this.port = port;
         this.consola = buffer;
+        
+        this.self = self;
     }
 
     @Override
@@ -56,8 +61,25 @@ public class Emisor extends Thread {
                         // obtener id
                         String id = (String) msg.getContent();
 //                        Cancion c = user.get(id);
-                        consola.enviar("DEBUG envio de cancion\n");
-                        this.fout.writeObject(new RespuestaCancion(null, null, new Cancion("215", "Hello", "Adele")));
+                        
+                        //
+                        
+                        //Se va a comprobar si el emisor tiene la cancion con id que le ha pasado el receptor
+                        
+                        //Si no tiene esa cancion
+                        if(!self.checkCancion(id)) {
+                        	consola.enviar("La cancion cuyo id ha pasado el receptor, no corresponde con ninguna canción de las que tiene el emisor.\n");
+                        }
+                        //Si si tiene la cancion
+                        else {
+                        	consola.enviar("DEBUG envio de cancion\n");
+                        	//!!!!!!!!!!Habria que hacer new Cancion()???
+                        	Cancion c = self.getCancion(id);
+                        	this.fout.writeObject(new RespuestaCancion(null, null, c));
+
+                        }
+                        	
+                        //
                         break;
 
                     case DESCONEXION:

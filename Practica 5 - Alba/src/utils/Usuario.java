@@ -33,9 +33,31 @@ public class Usuario implements Serializable {
     }
 
     public void addCancion(Cancion cancion) {
-        this.canciones.add(cancion);
+    	//Si la cancion no esta en el set del usuario 
+    	if(!checkCancion(cancion.getId())) {
+    		//Se agrega la cancion al set del usuario
+    		this.canciones.add(cancion);
+    	}
     }
 
+    
+    public boolean checkCancion(String id) {
+    	return canciones.contains(new Cancion(id, null, null));
+    }
+    
+    public Cancion getCancion(String id) {
+    	Cancion sol = null;
+    	
+    	for (Cancion c : canciones) {
+    	    if (c.getId().equals(id)) {
+    	        sol = c;
+    	        break; 
+    	    }
+    	}
+    	
+    	return sol;
+	}
+    
     @Override
     public boolean equals(Object obj) {
         if (obj.getClass() != this.getClass())
