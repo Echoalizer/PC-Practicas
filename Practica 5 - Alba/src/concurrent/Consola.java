@@ -1,4 +1,4 @@
-package cliente;
+package concurrent;
 
 import producersConsumers.SharedBuffer;
 
@@ -10,7 +10,7 @@ public class Consola extends Thread {
     private final PrintStream out = System.out;
     private final PrintStream err = System.err;
 
-    private boolean debug = false;
+    private boolean debug = true;
 
     public Consola(SharedBuffer buffer) {
         this.buffer = buffer;
@@ -23,6 +23,7 @@ public class Consola extends Thread {
 
     @Override
     public void run() {
+        // while (alive)
         while (true) {
             try {
                 String str = buffer.extraer();
@@ -31,8 +32,9 @@ public class Consola extends Thread {
                 } else if (str.startsWith("ERROR"))
                     err.println(str.substring(6));
                 else out.println(str);
+                // usar print + \n
             } catch (InterruptedException e) {
-                System.err.println("Error de concurrencia en el controlador");
+                err.println("Error de concurrencia en el controlador");
             }
         }
     }

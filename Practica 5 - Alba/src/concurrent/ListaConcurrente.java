@@ -1,4 +1,4 @@
-package servidor;
+package concurrent;
 
 import readersWriters.AlmacenRWI;
 import readersWriters.LockRWMonitor;
@@ -23,13 +23,10 @@ public class ListaConcurrente<T extends Serializable> implements AlmacenRWI<T> {
     @Override
     public boolean escribir(T value) throws InterruptedException {
         boolean insertado = false;
-        try {
-            controller.request_write();
-            insertado = valores.add(value);
-            controller.release_write();
-        } catch (InterruptedException e) {
-            throw new InterruptedException("No se ha podido escribir el valor.");
-        }
+
+        controller.request_write();
+        insertado = valores.add(value);
+        controller.release_write();
 
         return insertado;
     }
@@ -37,13 +34,10 @@ public class ListaConcurrente<T extends Serializable> implements AlmacenRWI<T> {
     @Override
     public boolean borrar(T value) throws InterruptedException {
         boolean borrado = false;
-        try {
-            controller.request_write();
-            borrado = valores.remove(value);
-            controller.release_write();
-        } catch (InterruptedException e) {
-            throw new InterruptedException("No se ha podido borrar el valor.");
-        }
+
+        controller.request_write();
+        borrado = valores.remove(value);
+        controller.release_write();
 
         return borrado;
     }
@@ -51,14 +45,13 @@ public class ListaConcurrente<T extends Serializable> implements AlmacenRWI<T> {
     @Override
     public ArrayList<T> leerLista() throws InterruptedException {
         ArrayList<T> lista;
-        try {
-            controller.request_read();
-            lista = new ArrayList<>(valores);
-            controller.release_read();
-        } catch (InterruptedException e) {
-            throw new InterruptedException("No se ha podido leer el valor.");
-        }
+
+        controller.request_read();
+        lista = new ArrayList<>(valores);
+        controller.release_read();
 
         return lista;
     }
+   
+    
 }

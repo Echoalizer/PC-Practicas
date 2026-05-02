@@ -1,7 +1,6 @@
 package cliente;
 
-import locks.LockId;
-import locks.LockTicket;
+import concurrent.Consola;
 import mensajes.*;
 import producersConsumers.SharedBuffer;
 import utils.Cancion;
@@ -13,20 +12,19 @@ import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.util.Scanner;
 
+
 public class Cliente {
     private final Socket s;
-
-    private final Scanner reader;
-
-    private final LockId oyenteLock;
-
     private final ObjectOutputStream fout;
     private final ObjectInputStream fin;
 
-    private final SharedBuffer buffer;
+    private final Scanner reader;
+    private final SharedBuffer consola;
 
     private Usuario self;
     private String name;
+
+    protected static volatile boolean running = true;
 
     public Cliente(Socket s, ObjectOutputStream fout, ObjectInputStream fin, Scanner in) {
         this.s = s;
@@ -34,14 +32,11 @@ public class Cliente {
         this.fin = fin;
         this.reader = in;
 
-        this.buffer = new SharedBuffer(2);  // tamaño del buffer
-        new Consola(buffer).start();
-
-        // lock para la terminal
-        this.oyenteLock = new LockTicket();
+        this.consola = new SharedBuffer(2);  // tamaño del buffer
+        new Consola(consola).start();
     }
 
-    // main
+
     public static void main(String[] args) {
 
         Scanner in = new Scanner(System.in);
@@ -50,7 +45,7 @@ public class Cliente {
         int puertoServidor;
 
         // Hay que crear el nuevo cliente -> Por lo que hay que pedir su info y crear el oyenteServidor
-        if (args.length > 0) {
+        if (args.length > 1) {
             IPServidor = args[0];
             puertoServidor = Integer.parseInt(args[1]);
         } else {
@@ -63,7 +58,6 @@ public class Cliente {
         }
 
         // Ahora creamos el socket que conecta con el servidor, y la instancia de Cliente
-
         Socket s = null;
         try {
             s = new Socket(IPServidor, puertoServidor);
@@ -89,28 +83,22 @@ public class Cliente {
     // hace de productor al enviar mensajes a la consola
     public void run() {
         try {
-            OyenteServidor oyente = new OyenteServidor(fout, fin, buffer);
-            oyente.start();
-        } catch (IOException e) {
-            try {
-                this.buffer.enviar("se ha producido un error: %s".formatted(e.getMessage()));
-            } catch (InterruptedException ex) {
-                throw new RuntimeException(ex);
-            }
-        }
-
-        // Lo primero que va a hacer el cliente cuando se cree, es mandar un mensaje de que se ha conectado al servidor
-        try {
             String ip = s.getLocalSocketAddress().toString();
-            this.buffer.enviar("Introduce tu nombre de usuario: ");
+            this.consola.enviar("Introduce tu nombre de usuario: ");
             String username = this.reader.nextLine();
             this.self = new Usuario(username, ip);
-            self.addCancion(new Cancion("%d".formatted(username.hashCode()), username, username));
+            self.addCancion(new Cancion("%d".formatted(2 * username.hashCode()), username, username));
             this.name = username;
+
+            // comprobar que no se envia el mensaje antes de terminmar de crear oyente
+            OyenteServidor oyente = new OyenteServidor(fout, fin, consola, self);
+            oyente.start();
+
+            // Lo primero que va a hacer el cliente cuando se cree, es mandar un mensaje de que se ha conectado al servidor
             fout.writeObject(new Conexion(ip, "server", self));
         } catch (IOException e) {
             try {
-                this.buffer.enviar("ERROR El cliente no ha podido mandar el mensaje de CONEXION");
+                this.consola.enviar("ERROR El cliente no ha podido mandar el mensaje de CONEXION\n");
             } catch (InterruptedException ex) {
                 throw new RuntimeException(ex);
             }
@@ -128,7 +116,7 @@ public class Cliente {
             s.close();
         } catch (IOException e) {
             try {
-                this.buffer.enviar("se ha producido un error: %s".formatted(e.getMessage()));
+                this.consola.enviar("se ha producido un error: %s".formatted(e.getMessage()));
             } catch (InterruptedException ex) {
                 throw new RuntimeException(ex);
             }
@@ -150,65 +138,75 @@ public class Cliente {
                 menu.append("Escoge una de las opciones: ").append("\n");
                 menu.append("1. DESCONEXION CLIENTE").append("\n");
                 menu.append("2. LISTA USUARIOS").append("\n");
-                menu.append("3. LISTA CANCIONES").append("\n");
-                menu.append("4. SOLICITAR CANCION").append("\n");
-                menu.append("5. AÑADIR CANCION").append("\n");
+                menu.append("3. LISTA CANCIONES SERVER").append("\n");
+                menu.append("4. LISTA CANCIONES PROPIAS").append("\n");
+                menu.append("5. SOLICITAR CANCION").append("\n");
+                menu.append("6. AÑADIR CANCION").append("\n");
+                menu.append("\n");
 
-                buffer.enviar(menu.toString());
-
-                option = Integer.parseInt(reader.nextLine());
+                consola.enviar(menu.toString());
 
                 try {
+                    option = Integer.parseInt(reader.nextLine());
 
                     switch (option) {
                         case 1:
-                            fout.writeObject(new DesconexionCliente(name, ""));
+                            fout.writeObject(new Desconexion(name, ""));
 
                             // Una vez se ha recibido por parte del servidor que se va a desconectar el cliente -> Se cambia de opcion
                             // para asi salir del bucle y cerrar los sockets y tod
                             option = -1;
+                            running = false;
                             break;
                         case 2:
-                            System.out.println("Lista de usuarios");
                             fout.writeObject(new SolicitudListaUsuarios(name, "server"));
                             break;
                         case 3:
-                            System.out.println("Lista de canciones");
                             fout.writeObject(new SolicitudListaCanciones(name, "server"));
                             break;
                         case 4:
-                            System.out.print("Id de la cancion: ");
-                            String id = reader.nextLine();
-
-                            // receiver null o server
-                            fout.writeObject(new SolicitudCancion(name, null, id));
+                            consola.enviar("Lista de canciones propias: \n");
+                            consola.enviar(self.getCanciones().toString() + "\n\n");
                             break;
                         case 5:
-                            System.out.print("Titulo: ");
+                            consola.enviar("Id de la cancion: ");
+                            String id = reader.nextLine();
+                            fout.writeObject(new SolicitudCancion(name, null, id)); // receiver null porque va dirigido a un cliente que aun no conocemos
+                            break;
+                        case 6:
+                            consola.enviar("Titulo: ");
                             String titulo = reader.nextLine();
-                            System.out.print("Artista: ");
+                            consola.enviar("Artista: ");
                             String artista = reader.nextLine();
-
-                            // id auto-generado
+//                            // id auto-generado
                             String idCancion = "" + (titulo.hashCode() + artista.hashCode());
-                            this.self.addCancion(new Cancion(idCancion, titulo, artista));
+                            //Hay que comprobar que esa cancion no este ya en el servidor 
+                            Cancion c = new Cancion(idCancion, titulo, artista);
+                            fout.writeObject(new ComprobarCancionCS(c, name, "server"));
+                            break;
+
                         default:
+//                            consola.enviar("No amorch lee bien... Numeros del 1 al 6\n");
+                            // opción sin funcionalidad asignada
                             break;
                     }
 
+                } catch (NumberFormatException e) {
+                    consola.enviar("Amorch un NUMEROOOO!!\n");
+                    option = 0;
                 } catch (IOException e) {
-                    System.err.printf("se ha producido un error: %s", e.getMessage());
+                    consola.enviar("ERROR se ha producido un error: %s\n".formatted(e.getMessage()));
                 }
             }
 
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        }
+            try {
+                reader.close();
+            } catch (Exception e) {
+                consola.enviar("ERROR no se pudo cerrar el scanner\n");
+                throw new RuntimeException(e);
+            }
 
-        try {
-            reader.close();
-        } catch (Exception e) {
-            System.err.println("no se pudo cerrar el scanner");
+        } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
     }

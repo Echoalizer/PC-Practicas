@@ -1,5 +1,6 @@
 package servidor;
 
+import concurrent.Canal;
 import mensajes.*;
 import producersConsumers.SharedBuffer;
 import utils.Cancion;
@@ -15,25 +16,25 @@ import java.util.ArrayList;
 
 public class OyenteCliente extends Thread {
     private final String name;
+    private final int id;
 
     private final Socket s;
-    private final ObjectInputStream fin;
-    private final ObjectOutputStream fout;
+    private final Canal canalCliente;
 
     // el nombre puede ser confuso pero ayuda a la legibilidad en el switch de mensajes
     private final SharedBuffer consola;
-
     private final Servidor servidor;
+
 
     // throws IOException ya que si hay algún error, directamente no se crea el objeto
     public OyenteCliente(Socket s, int id, ObjectOutputStream fout, ObjectInputStream fin,
                          SharedBuffer buffer, Servidor srv
     ) throws IOException {
         this.name = "OC" + id;
+        this.id = id;
 
         this.s = s;
-        this.fin = fin;
-        this.fout = fout;
+        this.canalCliente = new Canal(fout, fin);
 
         this.consola = buffer;
         this.servidor = srv;
@@ -47,14 +48,14 @@ public class OyenteCliente extends Thread {
         String server = "server", sender, receiver;
         TipoMensaje tipo;
 
-        ObjectOutputStream cout;
+        Canal canal;
 
         // try externo se encarga de tratar InterruptedException del productor-consumidor
         try {
 
             try {
                 while (continua) {
-                    msg = (Mensaje) fin.readObject();
+                    msg = (Mensaje) canalCliente.read();
 
                     tipo = msg.getTipo();
                     sender = msg.getSender();
@@ -70,18 +71,19 @@ public class OyenteCliente extends Thread {
                                 this.servidor.anadirCancion(c);
                                 this.servidor.update(c.getId(), user);
                             }
-                            this.servidor.anadirCanal(user.getUsername(), fout);
-                            fout.writeObject(new ConfirmacionConexion(server, sender));
+                            this.servidor.anadirCanal(user.getUsername(), canalCliente);
+//                            int puerto = 991;
+                            canalCliente.write(new ConfirmacionConexion(server, sender));
                             break;
 
                         case SOLICITUD_LISTA_USUARIOS:
                             ArrayList<Usuario> usuarios = this.servidor.getUsuarios();
-                            fout.writeObject(new RespuestaListaUsuarios(server, sender, usuarios));
+                            canalCliente.write(new RespuestaListaUsuarios(server, sender, usuarios));
                             break;
 
                         case SOLICITUD_LISTA_CANCIONES:
                             ArrayList<Cancion> canciones = this.servidor.getCanciones();
-                            fout.writeObject(new RespuestaListaCanciones(server, sender, canciones));
+                            canalCliente.write(new RespuestaListaCanciones(server, sender, canciones));
                             break;
 
                         case SOLICITUD_CANCION:
@@ -94,27 +96,67 @@ public class OyenteCliente extends Thread {
                                 receiver = propietario.getUsername();
                                 if (!sender.equals(receiver)) {
                                     this.consola.enviar(name + " - Solicitud de conexión: " + sender + " --- " + receiver);
-                                    cout = this.servidor.getCanal(receiver);
-                                    cout.writeObject(new EmitirCancion(sender, receiver));
+                                    canal = this.servidor.getCanal(receiver);
+                                    String puerto = servidor.getPuerto(id);
+                                    canal.write(new EmitirCancion(sender, receiver, puerto, cancion));
                                 }
                                 // else el cliente ha pedido una cancion que ya tiene
                             }
                             break;
 
                         case PREPARADO_CS:
-                            String address = (String) msg.getContent();
-                            cout = servidor.getCanal(receiver);
+                            Mensaje.Content content = (Mensaje.Content) msg.getContent();
+                            String address = content.getAddress();  // address = puerto
+
+                            canal = servidor.getCanal(receiver);
                             this.consola.enviar(name + " - Se creará conexión:  " + sender + " --- " + receiver);
-                            cout.writeObject(new PreparadoSC(sender, receiver, address));
+                            canal.write(new PreparadoSC(sender, receiver, address, content.getId()));
                             break;
 
-                        case DESCONEXION_CS:
+                        case ACTUALIZAR_CANC_RECEPTOR:
+                        	this.consola.enviar("Se esta actualizando el servidor\n");
+                        	
+                        	//En este punto, se asume que la cancion ya esta dentro de los usuarios receptor y emisor, por lo que no hay que comprobar aqui nada, simplemente
+                        	//hay que agregar dicha cancion al cliente receptor
+                        	Cancion c = (Cancion) msg.getContent();
+                        	Usuario usuarioReceptor = servidor.getUsuario(sender);
+                        	servidor.update(c.getId(), usuarioReceptor);
+
+                            canalCliente.write(new ConfirmacionActualizacionCanc(server, sender));
+                        	break;
+                            
+                            
+                        case COMPROBAR_CANCION_CS:
+                        	this.consola.enviar("Se va a comprobar si el servidor tiene ya esa cancion\n");
+                        	Cancion canc = (Cancion) msg.getContent();
+                        	boolean exist = servidor.checkCancion(canc.getId());
+
+                            canal = servidor.getCanal(sender);
+                        	if(!exist) {
+                        		this.consola.enviar("La cancion no existe en el servidor, asi que se va a introducir a continuacion\n");
+                        		servidor.anadirCancion(canc);
+                        		
+                        		Usuario u = servidor.getUsuario(sender);
+                            	servidor.update(canc.getId(), u);
+                                canalCliente.write(new RespuestaComprobacionCancionSC(canc, server, sender));
+
+                        	}
+                        	else {
+                        		this.consola.enviar("ERROR: La cancion ya existia en el servidor\n");
+                                // enviamos una objeto cancion falso
+                        		Cancion cancError = new Cancion("error", null, null); 
+                            	canal.write(new RespuestaComprobacionCancionSC(cancError, server, sender));
+                        		
+                        	}
+                        	break;
+                        
+                        case DESCONEXION:
                             this.consola.enviar(name + " - Se ha desconectado el cliente");
                             continua = false;
                             break;
 
                         default:
-                            throw new OperationNotSupportedException("No existe el tipo de mensaje.");
+                            throw new OperationNotSupportedException("No existe el tipo de mensaje: %s.".formatted(tipo));
                     }
                 }
 
@@ -124,8 +166,7 @@ public class OyenteCliente extends Thread {
                 this.consola.enviar("ERROR %s - %s.".formatted(name, e.getMessage()));
             } finally {
                 try {
-                    fin.close();
-                    fout.close();
+                    canalCliente.close();
                     s.close();
                     this.consola.enviar("DEBUG cerrar ok - %s".formatted(name));
                 } catch (IOException e) {

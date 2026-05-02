@@ -28,11 +28,21 @@ public class Cancion implements Serializable {
 
     @Override
     public boolean equals(Object o) {
-        // revisar
-        if (o.getClass() != this.getClass())
-            return false;
-        else
-            return this.id.equals(((Cancion) o).id);
+        // 1. Verificación de identidad física. Se comprueba si ambos objetos apuntan al mismo (misma referencia) 
+        if (this == o) return true;
+        
+        // 2. Verificación de nulidad y de clase
+        if (o == null || getClass() != o.getClass()) return false;
+        
+        // 3. Vamos a comparar ahora realmente por aquel campo que realmente nos interesa, que es el id
+        Cancion cancion = (Cancion) o;
+        return java.util.Objects.equals(id, cancion.id);
+    }
+
+    @Override
+    public int hashCode() {
+        // El hash debe generarse usando los mismos campos que en el equals
+        return java.util.Objects.hash(id);
     }
 
     @Override
@@ -40,8 +50,5 @@ public class Cancion implements Serializable {
         return String.format("%s: '%s' by '%s'", this.id, this.titulo, this.artista);
     }
 
-    @Override
-    public int hashCode() {
-        return this.id.hashCode();
-    }
+  
 }

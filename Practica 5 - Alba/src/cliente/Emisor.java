@@ -4,9 +4,12 @@ import mensajes.ConfirmacionConexion;
 import mensajes.Mensaje;
 import mensajes.RespuestaCancion;
 import mensajes.TipoMensaje;
+import producersConsumers.SharedBuffer;
 import utils.Cancion;
+import utils.Usuario;
 
 import javax.naming.OperationNotSupportedException;
+import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.ServerSocket;
@@ -17,18 +20,23 @@ public class Emisor extends Thread {
     private ObjectInputStream fin;
     private ObjectOutputStream fout;
 
+    SharedBuffer consola;
+
+	private Usuario self;
+	
     private final int port;
 
-    public Emisor(int port) {
+    public Emisor(int port, SharedBuffer buffer, Usuario self) {
         this.port = port;
+        this.consola = buffer;
+        
+        this.self = self;
     }
 
     @Override
-    public void run() {
+    public void run() {  // que pasa si dos clientes piden dato
         try (ServerSocket listen = new ServerSocket(port)) {
-            System.out.println("POV: no camino");
             Socket s = listen.accept();
-            System.out.println("que era bromaaaaa");
             this.fin = new ObjectInputStream(s.getInputStream());
             this.fout = new ObjectOutputStream(s.getOutputStream());
         } catch (Exception e) {
@@ -46,18 +54,36 @@ public class Emisor extends Thread {
 
                 switch (tipo) {
                     case CONEXION_CC:
-                        System.out.println("Se ha establecido conexion peer to peer");
+                        consola.enviar("Se ha establecido la conexion p2p.\n");
                         this.fout.writeObject(new ConfirmacionConexion(null, null));
                         break;
 
                     case SOLICITUD_CANCION:
                         // obtener id
+                        String id = (String) msg.getContent();
 //                        Cancion c = user.get(id);
-                        System.out.println("espero le guste....");
-                        this.fout.writeObject(new RespuestaCancion(null, null, new Cancion("2", "la la la", "yo mismx")));
+                        
+                        //
+                        
+                        //Se va a comprobar si el emisor tiene la cancion con id que le ha pasado el receptor
+                        
+                        //Si no tiene esa cancion
+                        if(!self.checkCancion(id)) {
+                        	consola.enviar("La cancion cuyo id ha pasado el receptor, no corresponde con ninguna canción de las que tiene el emisor.\n");
+                        }
+                        //Si si tiene la cancion
+                        else {
+                        	consola.enviar("DEBUG envio de cancion\n");
+                        	//!!!!!!!!!!Habria que hacer new Cancion()???
+                        	Cancion c = self.getCancion(id);
+                        	this.fout.writeObject(new RespuestaCancion(null, null, c));
+
+                        }
+                        	
+                        //
                         break;
 
-                    case DESCONEXION_CC:
+                    case DESCONEXION:
                         open = false;
                         break;
 
@@ -66,12 +92,18 @@ public class Emisor extends Thread {
 
                 }
             }
-            System.out.println("Se ha desconectado");
-            this.fout.close();
-            this.fin.close();
+            consola.enviar("DEBUG Finalizada conexion p2p.\n");
+
 
         } catch (Exception e) {
             throw new RuntimeException(e);
+        } finally {
+            try {
+                this.fout.close();
+                this.fin.close();
+            } catch (IOException e) {
+                // q pena
+            }
         }
     }
 

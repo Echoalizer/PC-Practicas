@@ -27,7 +27,6 @@ public class ControllerSem implements ProducerConsumerController {
 
     @Override
     public void acquireCons() throws InterruptedException {
-        if (full.hasQueuedThreads()) System.out.println("esperandoooo");
         full.acquire();
         mutexC.acquire();
     }
