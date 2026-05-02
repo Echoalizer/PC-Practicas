@@ -59,7 +59,7 @@ public class OyenteServidor extends Thread {
 
                 switch (tipo) {
                     case CONFIRMACION_CONEXION:
-//                        puerto = (int) msg.getContent();
+                        // El puerto se asigna en emisión -- porque?
                         consola.enviar("Se ha establecido conexion con el servidor\n");
                         break;
 
@@ -86,7 +86,7 @@ public class OyenteServidor extends Thread {
                     case EMITIR_CANCION:
                         Mensaje.Content data = (Mensaje.Content) msg.getContent();
 
-                        new Emisor(puerto, consola, self).start();
+                        new Emisor(Integer.parseInt(data.getAddress()), consola, self).start();
                         assert receiver.equals(this.name);
                         fout.writeObject(new PreparadoCS(receiver, sender, data.getAddress(), data.getId()));
 
@@ -139,6 +139,7 @@ public class OyenteServidor extends Thread {
             }
 
         } catch (Exception e) {
+            // este mensaje no es legible, ademas no siempre deberia matar al cliente
             throw new RuntimeException(e.getMessage());
         } finally {
             try {

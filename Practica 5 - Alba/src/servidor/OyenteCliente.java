@@ -74,7 +74,7 @@ public class OyenteCliente extends Thread {
                             this.servidor.anadirCanal(user.getUsername(), canalCliente);
 //                            int puerto = 991;
                             canalCliente.write(new ConfirmacionConexion(server, sender));
-                            consola.enviar("DEBUG enviado mensaje a %s".formatted(name));
+                            consola.enviar("DEBUG enviado mensaje a %s\n".formatted(name));
                             break;
 
                         case SOLICITUD_LISTA_USUARIOS:
@@ -101,6 +101,7 @@ public class OyenteCliente extends Thread {
 //                                    String puerto = servidor.getPuerto(id);
                                     String puerto = "991";
                                     canal.write(new EmitirCancion(sender, receiver, puerto, cancion));
+                                    // enviar error si esto falla ?
                                 }
                                 // else el cliente ha pedido una cancion que ya tiene
                             }
@@ -117,9 +118,9 @@ public class OyenteCliente extends Thread {
 
                         case ACTUALIZAR_CANC_RECEPTOR:
                         	this.consola.enviar("Se esta actualizando el servidor\n");
-                        	
-                        	//En este punto, se asume que la cancion ya esta dentro de los usuarios receptor y emisor, por lo que no hay que comprobar aqui nada, simplemente
-                        	//hay que agregar dicha cancion al cliente receptor
+
+                            // En este punto, se asume que la cancion ya esta dentro de los usuarios receptor y emisor, por lo que no hay que comprobar aqui nada, simplemente
+                            // hay que agregar dicha cancion al cliente receptor
                         	Cancion c = (Cancion) msg.getContent();
                         	Usuario usuarioReceptor = servidor.getUsuario(sender);
                         	servidor.update(c.getId(), usuarioReceptor);

@@ -19,15 +19,17 @@ public class Receptor extends Thread {
 
     private final int port;
     private final String idCancion;
+    private final String name;
 
     private Usuario self;
+
     
     public Receptor(String port, SharedBuffer buffer, String idCancion, Usuario self) {
         this.port = Integer.parseInt(port);
         this.consola = buffer;
         this.idCancion = idCancion;
         this.self = self;
-         
+        this.name = self.getUsername();
     }
 
     @Override
@@ -41,8 +43,9 @@ public class Receptor extends Thread {
         }
 
         try {
+            consola.enviar("DEBUG receptor listo\n");
 
-            fout.writeObject(new ConexionCC(null, null));
+            fout.writeObject(new ConexionCC(name, null));
 
             boolean open = true;
             while (open) {
@@ -50,21 +53,22 @@ public class Receptor extends Thread {
                 Mensaje msg = (Mensaje) fin.readObject();
 
                 TipoMensaje tipo = msg.getTipo();
+                String sender = msg.getSender();
 
                 switch (tipo) {
                     case CONFIRMACION_CONEXION:
                         consola.enviar("Se ha establecido la conexion p2p\n");
                         // no tenemos id cancion
-                        this.fout.writeObject(new SolicitudCancion(null, null, idCancion));
+                        this.fout.writeObject(new SolicitudCancion(name, sender, idCancion));
                         break;
 
                     case RESPUESTA_CANCION_CC:
                         Cancion cancion = (Cancion) msg.getContent();
-                        consola.enviar("DEBUG" + cancion + "\n");
+                        consola.enviar("DEBUG Recibida: %s \n".formatted(cancion.toString()));
                         // guardar cancion en el usuario
-                        self.addCancion(cancion);                        
-                        
-                        this.fout.writeObject(new Desconexion(null, null));
+                        self.addCancion(cancion);
+
+                        this.fout.writeObject(new Desconexion(name, sender));
                         open = false;
                         break;
 

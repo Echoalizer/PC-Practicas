@@ -25,12 +25,14 @@ public class Emisor extends Thread {
 	private Usuario self;
 	
     private final int port;
+    private final String name;
 
     public Emisor(int port, SharedBuffer buffer, Usuario self) {
         this.port = port;
         this.consola = buffer;
         
         this.self = self;
+        this.name = self.getUsername();
     }
 
     @Override
@@ -44,6 +46,7 @@ public class Emisor extends Thread {
         }
 
         try {
+            consola.enviar("DEBUG emisor listo\n");
 
             boolean open = true;
             while (open) {
@@ -51,36 +54,26 @@ public class Emisor extends Thread {
                 Mensaje msg = (Mensaje) fin.readObject();
 
                 TipoMensaje tipo = msg.getTipo();
+                String sender = msg.getSender();
 
                 switch (tipo) {
                     case CONEXION_CC:
                         consola.enviar("Se ha establecido la conexion p2p.\n");
-                        this.fout.writeObject(new ConfirmacionConexion(null, null));
+                        this.fout.writeObject(new ConfirmacionConexion(name, sender));
                         break;
 
                     case SOLICITUD_CANCION:
-                        // obtener id
                         String id = (String) msg.getContent();
-//                        Cancion c = user.get(id);
-                        
-                        //
-                        
-                        //Se va a comprobar si el emisor tiene la cancion con id que le ha pasado el receptor
-                        
-                        //Si no tiene esa cancion
+
+                        // Se va a comprobar si el emisor tiene la cancion con id que le ha pasado el receptor
+                        // Si no tiene esa cancion
                         if(!self.checkCancion(id)) {
                         	consola.enviar("La cancion cuyo id ha pasado el receptor, no corresponde con ninguna canción de las que tiene el emisor.\n");
-                        }
-                        //Si si tiene la cancion
-                        else {
+                        } else {  // Si sí tiene la cancion
                         	consola.enviar("DEBUG envio de cancion\n");
-                        	//!!!!!!!!!!Habria que hacer new Cancion()???
                         	Cancion c = self.getCancion(id);
-                        	this.fout.writeObject(new RespuestaCancion(null, null, c));
-
+                            this.fout.writeObject(new RespuestaCancion(name, sender, c));
                         }
-                        	
-                        //
                         break;
 
                     case DESCONEXION:
