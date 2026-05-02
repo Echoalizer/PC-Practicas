@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
+import java.net.SocketException;
 import java.util.Scanner;
 
 
@@ -24,7 +25,7 @@ public class Cliente {
     private Usuario self;
     private String name;
 
-    protected static volatile boolean running = true;
+    public static volatile boolean running = true;
 
     public Cliente(Socket s, ObjectOutputStream fout, ObjectInputStream fin, Scanner in) {
         this.s = s;
@@ -116,7 +117,7 @@ public class Cliente {
             s.close();
         } catch (IOException e) {
             try {
-                this.consola.enviar("se ha producido un error: %s".formatted(e.getMessage()));
+                this.consola.enviar("se ha producido un error: %s\n".formatted(e.getMessage()));
             } catch (InterruptedException ex) {
                 throw new RuntimeException(ex);
             }
@@ -124,7 +125,7 @@ public class Cliente {
 
         // de esta manera no se quedan hilos colgando.
         // podriamos apagar el hilo OyenteServidor transmitiendo el mensaje de conexion cerrada.
-        System.exit(0);
+//        System.exit(0);
     }
 
     private void menu() {
@@ -135,6 +136,7 @@ public class Cliente {
             while (option != -1) {
 
                 StringBuilder menu = new StringBuilder();
+                menu.append("\n");
                 menu.append("Escoge una de las opciones: ").append("\n");
                 menu.append("1. DESCONEXION CLIENTE").append("\n");
                 menu.append("2. LISTA USUARIOS").append("\n");
@@ -186,16 +188,19 @@ public class Cliente {
                             break;
 
                         default:
-//                            consola.enviar("No amorch lee bien... Numeros del 1 al 6\n");
                             // opción sin funcionalidad asignada
                             break;
                     }
 
                 } catch (NumberFormatException e) {
-                    consola.enviar("Amorch un NUMEROOOO!!\n");
+                    consola.enviar("Comando no reconocido\n");
                     option = 0;
+                } catch (SocketException e) {
+                    consola.enviar("No se puede comunicar con el servidor.\n");
+                    option = -1;
+                    running = false;
                 } catch (IOException e) {
-                    consola.enviar("ERROR se ha producido un error: %s\n".formatted(e.getMessage()));
+                    consola.enviar("ERROR se ha producido un error: %s\n".formatted(e));
                 }
             }
 

@@ -34,7 +34,7 @@ public class OyenteServidor extends Thread {
         this.consola = buffer;
         
         this.self = self;
-//        this.name = self.getUsername();
+        this.name = self.getUsername();
     }
 
     @Override
@@ -55,37 +55,40 @@ public class OyenteServidor extends Thread {
                 sender = msg.getSender();
                 receiver = msg.getReceiver();
 
+                consola.enviar("DEBUG Recibido mensaje tipo %s\n".formatted(tipo));
+
                 switch (tipo) {
                     case CONFIRMACION_CONEXION:
-                        puerto = (int) msg.getContent();
-                        consola.enviar("Se ha establecido conexion con el servidor");
+//                        puerto = (int) msg.getContent();
+                        consola.enviar("Se ha establecido conexion con el servidor\n");
                         break;
 
                     case RESPUESTA_LISTA_USUARIOS:
-                        consola.enviar("Lista de usuarios");
+                        consola.enviar("Lista de usuarios\n");
                         ArrayList<Usuario> usuarios = (ArrayList<Usuario>) msg.getContent();
                         StringBuilder listaUsuarios = new StringBuilder();
                         for (Usuario u : usuarios) {
                             listaUsuarios.append(u).append("\n");
                         }
-                        consola.enviar(listaUsuarios.toString());
+                        consola.enviar(listaUsuarios.toString() + "\n");
                         break;
 
                     case RESPUESTA_LISTA_CANCIONES:
-                        consola.enviar("Lista de canciones");
+                        consola.enviar("Lista de canciones\n");
                         ArrayList<Cancion> canciones = (ArrayList<Cancion>) msg.getContent();
                         StringBuilder listaCanciones = new StringBuilder();
                         for (Cancion c : canciones) {
                             listaCanciones.append(c).append("\n");
                         }
-                        consola.enviar(listaCanciones.toString());
+                        consola.enviar(listaCanciones.toString() + "\n");
                         break;
 
                     case EMITIR_CANCION:
-                        String id = (String) msg.getContent();
+                        Mensaje.Content data = (Mensaje.Content) msg.getContent();
+
                         new Emisor(puerto, consola, self).start();
-                        // assert receiver == this.name --!-- no tenemos el name de Cliente
-                        fout.writeObject(new PreparadoCS(receiver, sender, "" + puerto, id));
+                        assert receiver.equals(this.name);
+                        fout.writeObject(new PreparadoCS(receiver, sender, data.getAddress(), data.getId()));
 
                         break;
 
@@ -105,11 +108,11 @@ public class OyenteServidor extends Thread {
                         break;
 
                     case CONFIRMACION_ACTUALIZACION_CANC:
-                    	this.consola.enviar("Se ha actualizado correctamente el servidor");
+                        this.consola.enviar("Se ha actualizado correctamente el servidor\n");
                         break;
                         
                     case DESCONEXION:
-                        consola.enviar("ERROR Se ha desconectado el servidor.");
+                        consola.enviar("ERROR Se ha desconectado el servidor.\n");
                         continua = false;
                         break;
 
@@ -121,8 +124,8 @@ public class OyenteServidor extends Thread {
                     		
                     		//Ahora se va actualizar el usuario
                     		this.self.addCancion(c);
-                    		
-                    		this.consola.enviar("La cancion se añadio correctamente tanto al cliente como al servidor");
+
+                            this.consola.enviar("La cancion se añadio correctamente tanto al cliente como al servidor\n");
                     	}
                         break;
 
@@ -132,7 +135,7 @@ public class OyenteServidor extends Thread {
 
             }
             if (!Cliente.running) {
-                consola.enviar("BuEnooOOoOoooOOoo.");
+                consola.enviar("BuEnooOOoOoooOOoo.\n");
             }
 
         } catch (Exception e) {

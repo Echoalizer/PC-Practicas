@@ -64,9 +64,9 @@ public class OyenteCliente extends Thread {
                     switch (tipo) {
                         case CONEXION_CS:
                             Usuario user = (Usuario) msg.getContent();
-                            this.consola.enviar(name + " - Conexión establecida");
+                            this.consola.enviar(name + " - Conexión establecida\n");
                             if (!this.servidor.anadirUsuario(user))
-                                this.consola.enviar("El usuario %s ya existe.".formatted(user.getUsername()));
+                                this.consola.enviar("El usuario %s ya existe.\n".formatted(user.getUsername()));
                             for (Cancion c : user.getCanciones()) {
                                 this.servidor.anadirCancion(c);
                                 this.servidor.update(c.getId(), user);
@@ -74,6 +74,7 @@ public class OyenteCliente extends Thread {
                             this.servidor.anadirCanal(user.getUsername(), canalCliente);
 //                            int puerto = 991;
                             canalCliente.write(new ConfirmacionConexion(server, sender));
+                            consola.enviar("DEBUG enviado mensaje a %s".formatted(name));
                             break;
 
                         case SOLICITUD_LISTA_USUARIOS:
@@ -90,14 +91,15 @@ public class OyenteCliente extends Thread {
                             String cancion = (String) msg.getContent();
                             Usuario propietario = this.servidor.getUsuarioCancion(cancion);
                             if (propietario == null) {
-                                this.consola.enviar("ERROR %s - No existe la cancion %s.".formatted(name, cancion));
+                                this.consola.enviar("ERROR %s - No existe la cancion %s.\n".formatted(name, cancion));
                             } else {
 
                                 receiver = propietario.getUsername();
                                 if (!sender.equals(receiver)) {
-                                    this.consola.enviar(name + " - Solicitud de conexión: " + sender + " --- " + receiver);
+                                    this.consola.enviar(name + " - Solicitud de conexión: " + sender + " --- " + receiver + "\n");
                                     canal = this.servidor.getCanal(receiver);
-                                    String puerto = servidor.getPuerto(id);
+//                                    String puerto = servidor.getPuerto(id);
+                                    String puerto = "991";
                                     canal.write(new EmitirCancion(sender, receiver, puerto, cancion));
                                 }
                                 // else el cliente ha pedido una cancion que ya tiene
@@ -109,7 +111,7 @@ public class OyenteCliente extends Thread {
                             String address = content.getAddress();  // address = puerto
 
                             canal = servidor.getCanal(receiver);
-                            this.consola.enviar(name + " - Se creará conexión:  " + sender + " --- " + receiver);
+                            this.consola.enviar(name + " - Se creará conexión:  " + sender + " --- " + receiver + "\n");
                             canal.write(new PreparadoSC(sender, receiver, address, content.getId()));
                             break;
 
@@ -151,7 +153,7 @@ public class OyenteCliente extends Thread {
                         	break;
                         
                         case DESCONEXION:
-                            this.consola.enviar(name + " - Se ha desconectado el cliente");
+                            this.consola.enviar(name + " - Se ha desconectado el cliente\n");
                             continua = false;
                             break;
 
@@ -161,16 +163,16 @@ public class OyenteCliente extends Thread {
                 }
 
             } catch (EOFException e) {
-                this.consola.enviar("ERROR %s - El cliente se ha desconectado.".formatted(name));
+                this.consola.enviar("ERROR %s - El cliente se ha desconectado.\n".formatted(name));
             } catch (Exception e) {
-                this.consola.enviar("ERROR %s - %s.".formatted(name, e.getMessage()));
+                this.consola.enviar("ERROR %s - %s.\n".formatted(name, e.getMessage()));
             } finally {
                 try {
                     canalCliente.close();
                     s.close();
-                    this.consola.enviar("DEBUG cerrar ok - %s".formatted(name));
+                    this.consola.enviar("DEBUG cerrar ok - %s\n".formatted(name));
                 } catch (IOException e) {
-                    this.consola.enviar("ERROR No se han podido cerrar las conexiones.");
+                    this.consola.enviar("ERROR No se han podido cerrar las conexiones.\n");
                 }
             }
 

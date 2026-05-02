@@ -1,6 +1,9 @@
 package servidor;
 
-import concurrent.*;
+import concurrent.Canal;
+import concurrent.Consola;
+import concurrent.ListaConcurrente;
+import concurrent.MapaConcurrente;
 import producersConsumers.SharedBuffer;
 import utils.Cancion;
 import utils.Usuario;
@@ -23,11 +26,11 @@ public class Servidor {
     private final ListaConcurrente<Usuario> usuarios;
     private final ListaConcurrente<Cancion> canciones;
     // canciones indexadas por username
-    private final MapaConcurrente<ArrayList<Usuario>> canciones_por_usuario;
+    private final MapaConcurrente<Usuario> canciones_por_usuario;
 
     private final MapaConcurrente<Canal> canales;
 
-    private final ArrayList<LockedString> puertos;
+//    private final ArrayList<LockedString> puertos;
 
 
     public Servidor(ServerSocket s) {
@@ -88,7 +91,7 @@ public class Servidor {
                 oyente.start();
             } catch (IOException e) {
                 try {
-                    this.buffer.enviar("ERROR Error al conectar con el cliente: %s".formatted(e.getMessage()));
+                    this.buffer.enviar("ERROR Error al conectar con el cliente: %s\n".formatted(e.getMessage()));
                 } catch (InterruptedException ex) {
                     throw new RuntimeException("Error al almacenar en el buffer de consola!");
                 }
@@ -150,13 +153,12 @@ public class Servidor {
     }
 
     public Usuario getUsuarioCancion(String cancion) throws InterruptedException {
-        var lista = this.getUsuarioCancion(cancion);
-        ;
-//        return this.canciones_por_usuario.leer(cancion);
+//        var lista = this.getUsuarioCancion(cancion);
+        return this.canciones_por_usuario.leer(cancion);
     }
 
     public void update(String cancion, Usuario usuario) throws IOException, InterruptedException {
-//        this.canciones_por_usuario.escribir(cancion, usuario);
+        this.canciones_por_usuario.escribir(cancion, usuario);
     }
 
     public boolean anadirCanal(String username, Canal canal) throws InterruptedException, IOException {

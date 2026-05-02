@@ -53,14 +53,14 @@ public class Receptor extends Thread {
 
                 switch (tipo) {
                     case CONFIRMACION_CONEXION:
-                        consola.enviar("Se ha establecido la conexion p2p");
+                        consola.enviar("Se ha establecido la conexion p2p\n");
                         // no tenemos id cancion
                         this.fout.writeObject(new SolicitudCancion(null, null, idCancion));
                         break;
 
                     case RESPUESTA_CANCION_CC:
                         Cancion cancion = (Cancion) msg.getContent();
-                        consola.enviar("DEBUG" + cancion);
+                        consola.enviar("DEBUG" + cancion + "\n");
                         // guardar cancion en el usuario
                         self.addCancion(cancion);                        
                         
@@ -73,7 +73,7 @@ public class Receptor extends Thread {
 
                 }
             }
-            consola.enviar("DEBUG Finalizada conexion p2p");
+            consola.enviar("DEBUG Finalizada conexion p2p\n");
             this.fout.close();
             this.fin.close();
 
