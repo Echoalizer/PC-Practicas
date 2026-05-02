@@ -12,6 +12,7 @@ import javax.naming.OperationNotSupportedException;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.net.SocketException;
 import java.util.ArrayList;
 
 public class OyenteServidor extends Thread {
@@ -95,38 +96,40 @@ public class OyenteServidor extends Thread {
                     case PREPARADO_SC:
                         Mensaje.Content content = (Mensaje.Content) msg.getContent();
 
-                        boolean before = self.checkCancion(content.getId());
                         new Receptor(content.getAddress(), consola, content.getId(), self).start();
-                        boolean after = self.checkCancion(content.getId());  // revisar
-                        
-                        if(!before && after) {
-                        	//Aqui tendria que hacerse lo de nueva cancion??
-                            Cancion c = self.getCancion(content.getId());
-                        	//Se manda al servidor un mensaje de que se quiere actualizar las canciones del cliente
-                            fout.writeObject(new ActualizarCancReceptor(sender, server, c));
-                        }
+
+                        // TODO podemos usar Canal; pasar fout al Receptor
+                        sleep(1000);  // a falta de sincronizar arriba y abajo
+
+                        // can puede ser null si el receptor no ha completado su funcion
+
+                        // actualizamos siempre, asumiendo que no ha habido error en la transmisión
+                        Cancion can = self.getCancion(content.getId());
+                        // Se manda al servidor un mensaje de que se quiere actualizar las canciones del cliente
+                        fout.writeObject(new ActualizarCancReceptor(sender, server, can));
+
                         break;
 
                     case CONFIRMACION_ACTUALIZACION_CANC:
                         this.consola.enviar("Se ha actualizado correctamente el servidor\n");
                         break;
-                        
+
                     case DESCONEXION:
                         consola.enviar("ERROR Se ha desconectado el servidor.\n");
                         continua = false;
                         break;
 
                     case RESPUESTA_COMPROBACION_SC:
-                    	Cancion c = (Cancion) msg.getContent();
-                    	if(c.getId().equals("error"))
-                    		this.consola.enviar("La cancion original no se ha podido añadir al cliente debido a que ya estaba en el servidor. Si se desea, se podria pedir al cliente que ya la tenga\n");
-                    	else {
-                    		
-                    		//Ahora se va actualizar el usuario
-                    		this.self.addCancion(c);
+                        Cancion c = (Cancion) msg.getContent();
+                        if (c.getId().equals("error"))
+                            this.consola.enviar("La cancion original no se ha podido añadir al cliente debido a que ya estaba en el servidor. Si se desea, se podria pedir al cliente que ya la tenga\n");
+                        else {
+
+                            //Ahora se va actualizar el usuario
+                            this.self.addCancion(c);
 
                             this.consola.enviar("La cancion se añadio correctamente tanto al cliente como al servidor\n");
-                    	}
+                        }
                         break;
 
                     default:
@@ -138,9 +141,11 @@ public class OyenteServidor extends Thread {
                 consola.enviar("BuEnooOOoOoooOOoo.\n");
             }
 
+        } catch (SocketException e) {
+            // La excepcion es el mensaje de cierre
         } catch (Exception e) {
-            // este mensaje no es legible, ademas no siempre deberia matar al cliente
-            throw new RuntimeException(e.getMessage());
+            // este mensaje no es legible
+            throw new RuntimeException(e);
         } finally {
             try {
                 fin.close();

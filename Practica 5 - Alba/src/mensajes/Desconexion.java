@@ -1,17 +1,22 @@
 package mensajes;
 
+import utils.Usuario;
+
 import java.io.Serializable;
 
 // Utilizado de forma genérica en todas las desconexiones
 public class Desconexion extends Mensaje {
 
-    public Desconexion(String sender, String receiver) {
+    private final Usuario user;
+
+    public Desconexion(String sender, String receiver, Usuario user) {
         super(TipoMensaje.DESCONEXION, sender, receiver);
+        this.user = user;
     }
 
     @Override
     public Serializable getContent() {
-        throw new UnsupportedOperationException("Este tipo de mensaje no tiene contenido");
+        return this.user;
     }
 
 }

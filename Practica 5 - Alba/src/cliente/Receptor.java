@@ -68,7 +68,8 @@ public class Receptor extends Thread {
                         // guardar cancion en el usuario
                         self.addCancion(cancion);
 
-                        this.fout.writeObject(new Desconexion(name, sender));
+                        // mensaje desconexionCC?
+                        this.fout.writeObject(new Desconexion(name, sender, null));
                         open = false;
                         break;
 

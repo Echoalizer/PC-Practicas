@@ -25,6 +25,7 @@ public class Cliente {
     private Usuario self;
     private String name;
 
+    // TODO proteger con lock
     public static volatile boolean running = true;
 
     public Cliente(Socket s, ObjectOutputStream fout, ObjectInputStream fin, Scanner in) {
@@ -148,12 +149,14 @@ public class Cliente {
 
                 consola.enviar(menu.toString());
 
+                String server = "server";
+
                 try {
                     option = Integer.parseInt(reader.nextLine());
 
                     switch (option) {
                         case 1:
-                            fout.writeObject(new Desconexion(name, ""));
+                            fout.writeObject(new Desconexion(name, server, self));
 
                             // Una vez se ha recibido por parte del servidor que se va a desconectar el cliente -> Se cambia de opcion
                             // para asi salir del bucle y cerrar los sockets y tod
@@ -161,10 +164,10 @@ public class Cliente {
                             running = false;
                             break;
                         case 2:
-                            fout.writeObject(new SolicitudListaUsuarios(name, "server"));
+                            fout.writeObject(new SolicitudListaUsuarios(name, server));
                             break;
                         case 3:
-                            fout.writeObject(new SolicitudListaCanciones(name, "server"));
+                            fout.writeObject(new SolicitudListaCanciones(name, server));
                             break;
                         case 4:
                             consola.enviar("Lista de canciones propias: \n");
@@ -173,7 +176,7 @@ public class Cliente {
                         case 5:
                             consola.enviar("Id de la cancion: ");
                             String id = reader.nextLine();
-                            fout.writeObject(new SolicitudCancion(name, null, id)); // receiver null porque va dirigido a un cliente que aun no conocemos
+                            fout.writeObject(new SolicitudCancion(name, server, id)); // receiver null porque va dirigido a un cliente que aun no conocemos
                             break;
                         case 6:
                             consola.enviar("Titulo: ");
@@ -184,7 +187,7 @@ public class Cliente {
                             String idCancion = "" + (titulo.hashCode() + artista.hashCode());
                             //Hay que comprobar que esa cancion no este ya en el servidor 
                             Cancion c = new Cancion(idCancion, titulo, artista);
-                            fout.writeObject(new ComprobarCancionCS(c, name, "server"));
+                            fout.writeObject(new ComprobarCancionCS(c, name, server));
                             break;
 
                         default:

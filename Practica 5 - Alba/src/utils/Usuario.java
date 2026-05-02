@@ -4,6 +4,7 @@ import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Set;
 
+// TODO compartir entre los Threads del cliente
 public class Usuario implements Serializable {
     private String username;
     private String ipAddress;
@@ -67,7 +68,7 @@ public class Usuario implements Serializable {
 
     @Override
     public String toString() {
-        return String.format("%s - %s", this.username, this.ipAddress);
+        return String.format("%s - %s:\n%s", this.username, this.ipAddress, this.canciones);
     }
 
     @Override

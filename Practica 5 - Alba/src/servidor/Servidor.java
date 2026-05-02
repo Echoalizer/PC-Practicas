@@ -25,6 +25,8 @@ public class Servidor {
 
     private final ListaConcurrente<Usuario> usuarios;
     private final ListaConcurrente<Cancion> canciones;
+
+    // TODO permitir varios usuarios
     // canciones indexadas por username
     private final MapaConcurrente<Usuario> canciones_por_usuario;
 
@@ -73,10 +75,10 @@ public class Servidor {
         }
     }
 
-    /// TODO fix catch
+
     public void run() throws IOException {
         Socket ss;
-        int k = 0;  // concurrente para volver a bajar el numero de cliente
+        int k = 0;  // TODO concurrente para volver a bajar el numero de cliente
         // while (alive)
         while (true) {
             ss = srvSocket.accept();
@@ -90,6 +92,7 @@ public class Servidor {
 
                 oyente.start();
             } catch (IOException e) {
+                // TODO fix catch
                 try {
                     this.buffer.enviar("ERROR Error al conectar con el cliente: %s\n".formatted(e.getMessage()));
                 } catch (InterruptedException ex) {
@@ -102,9 +105,9 @@ public class Servidor {
     public ArrayList<Usuario> getUsuarios() throws InterruptedException {
         return this.usuarios.leerLista();  // re-throw
     }
-    
-    
-    //Metodo necesario para cuando queremos actualizar canciones_por_usuario
+
+
+    // Metodo necesario para cuando queremos actualizar canciones_por_usuario
     public Usuario getUsuario(String name) {
     	Usuario sol = null;
     	
@@ -144,12 +147,20 @@ public class Servidor {
         return this.usuarios.escribir(usuario);  // re-throw
     }
 
+    public boolean borrarUsuario(Usuario usuario) throws InterruptedException {
+        return this.usuarios.borrar(usuario);
+    }
+
     public ArrayList<Cancion> getCanciones() throws InterruptedException {
         return this.canciones.leerLista();  // re-throw
     }
 
     public boolean anadirCancion(Cancion cancion) throws InterruptedException {
         return this.canciones.escribir(cancion);  // re-throw
+    }
+
+    public boolean borrarCancion(Cancion cancion) throws InterruptedException {
+        return this.canciones.borrar(cancion);
     }
 
     public Usuario getUsuarioCancion(String cancion) throws InterruptedException {
@@ -161,11 +172,19 @@ public class Servidor {
         this.canciones_por_usuario.escribir(cancion, usuario);
     }
 
-    public boolean anadirCanal(String username, Canal canal) throws InterruptedException, IOException {
-        return this.canales.escribir(username, canal);
+    public void remove(String cancion) throws InterruptedException {
+        this.canciones_por_usuario.borrar(cancion);
     }
 
     public Canal getCanal(String username) throws InterruptedException {
         return this.canales.leer(username);
+    }
+
+    public boolean anadirCanal(String username, Canal canal) throws InterruptedException, IOException {
+        return this.canales.escribir(username, canal);
+    }
+
+    public boolean borrarCanal(String username) throws InterruptedException {
+        return this.canales.borrar(username);
     }
 }

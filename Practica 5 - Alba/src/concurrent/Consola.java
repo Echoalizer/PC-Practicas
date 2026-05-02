@@ -24,8 +24,7 @@ public class Consola extends Thread {
 
     @Override
     public void run() {
-        // while (alive)
-        while (Cliente.running) {
+        while (Cliente.running) {  // no siempre llega la lectura a tiempo
             try {
                 String str = buffer.extraer();
                 if (str.startsWith("DEBUG")) {

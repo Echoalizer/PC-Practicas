@@ -99,6 +99,7 @@ public class OyenteCliente extends Thread {
                                     this.consola.enviar(name + " - Solicitud de conexión: " + sender + " --- " + receiver + "\n");
                                     canal = this.servidor.getCanal(receiver);
 //                                    String puerto = servidor.getPuerto(id);
+                                    // TODO obtener puerto del cliente
                                     String puerto = "991";
                                     canal.write(new EmitirCancion(sender, receiver, puerto, cancion));
                                     // enviar error si esto falla ?
@@ -119,8 +120,9 @@ public class OyenteCliente extends Thread {
                         case ACTUALIZAR_CANC_RECEPTOR:
                         	this.consola.enviar("Se esta actualizando el servidor\n");
 
-                            // En este punto, se asume que la cancion ya esta dentro de los usuarios receptor y emisor, por lo que no hay que comprobar aqui nada, simplemente
-                            // hay que agregar dicha cancion al cliente receptor
+                            // En este punto, se asume que la canción ya está dentro de los usuarios receptor y emisor,
+                            // por lo que no hay que comprobar aquí nada, simplemente hay que agregar dicha canción
+                            // al cliente receptor
                         	Cancion c = (Cancion) msg.getContent();
                         	Usuario usuarioReceptor = servidor.getUsuario(sender);
                         	servidor.update(c.getId(), usuarioReceptor);
@@ -145,16 +147,26 @@ public class OyenteCliente extends Thread {
 
                         	}
                         	else {
-                        		this.consola.enviar("ERROR: La cancion ya existia en el servidor\n");
+                                this.consola.enviar("ERROR La cancion ya existia en el servidor\n");
                                 // enviamos una objeto cancion falso
                         		Cancion cancError = new Cancion("error", null, null); 
                             	canal.write(new RespuestaComprobacionCancionSC(cancError, server, sender));
-                        		
                         	}
                         	break;
                         
                         case DESCONEXION:
+                            Usuario user2 = (Usuario) msg.getContent();
                             this.consola.enviar(name + " - Se ha desconectado el cliente\n");
+
+//                            this.consola.enviar("borrando %s\n usuario\n".formatted(user2));
+                            for (Cancion c2 : user2.getCanciones()) {
+                                this.servidor.borrarCancion(c2);
+                                this.servidor.remove(c2.getId());
+                                this.consola.enviar("DEBUG %s borrada\n".formatted(c2.getId()));
+                            }
+                            this.servidor.borrarUsuario(user2);
+                            this.consola.enviar("DEBUG usuario %s borrado.\n".formatted(user2.getUsername()));
+                            this.servidor.borrarCanal(user2.getUsername());
                             continua = false;
                             break;
 
