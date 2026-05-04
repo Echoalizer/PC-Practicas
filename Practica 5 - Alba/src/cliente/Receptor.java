@@ -1,5 +1,6 @@
 package cliente;
 
+import concurrent.Canal;
 import mensajes.*;
 import producersConsumers.SharedBuffer;
 import utils.Cancion;
@@ -21,15 +22,18 @@ public class Receptor extends Thread {
     private final String idCancion;
     private final String name;
 
+    private final Canal canalServ;
+
     private Usuario self;
 
-    
-    public Receptor(String port, SharedBuffer buffer, String idCancion, Usuario self) {
+
+    public Receptor(String port, SharedBuffer buffer, Canal canalServ, String idCancion, Usuario self) {
         this.port = Integer.parseInt(port);
         this.consola = buffer;
         this.idCancion = idCancion;
         this.self = self;
         this.name = self.getUsername();
+        this.canalServ = canalServ;
     }
 
     @Override
@@ -67,6 +71,9 @@ public class Receptor extends Thread {
                         consola.enviar("DEBUG Recibida: %s \n".formatted(cancion.toString()));
                         // guardar cancion en el usuario
                         self.addCancion(cancion);
+
+                        // Se manda al servidor un mensaje de que se quiere actualizar las canciones del cliente
+                        this.canalServ.write(new ActualizarCancReceptor(name, "server", cancion));
 
                         // mensaje desconexionCC?
                         this.fout.writeObject(new Desconexion(name, sender, null));

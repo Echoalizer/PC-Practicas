@@ -1,9 +1,7 @@
 package cliente;
 
-import mensajes.ConfirmacionConexion;
-import mensajes.Mensaje;
-import mensajes.RespuestaCancion;
-import mensajes.TipoMensaje;
+import concurrent.Canal;
+import mensajes.*;
 import producersConsumers.SharedBuffer;
 import utils.Cancion;
 import utils.Usuario;
@@ -20,16 +18,19 @@ public class Emisor extends Thread {
     private ObjectInputStream fin;
     private ObjectOutputStream fout;
 
-    SharedBuffer consola;
+    private final SharedBuffer consola;
+    private final Canal canalServidor;
 
 	private Usuario self;
 	
     private final int port;
     private final String name;
 
-    public Emisor(int port, SharedBuffer buffer, Usuario self) {
+    public Emisor(int port, SharedBuffer buffer, Canal srv, Usuario self) {
         this.port = port;
         this.consola = buffer;
+
+        this.canalServidor = srv;
         
         this.self = self;
         this.name = self.getUsername();
@@ -73,6 +74,9 @@ public class Emisor extends Thread {
                         	consola.enviar("DEBUG envio de cancion\n");
                         	Cancion c = self.getCancion(id);
                             this.fout.writeObject(new RespuestaCancion(name, sender, c));
+
+                            // enviar a servidor: devolver puerto
+                            this.canalServidor.write(new DevolverPuertoEmisor(name, "server"));
                         }
                         break;
 

@@ -1,6 +1,6 @@
 package cliente;
 
-import mensajes.ActualizarCancReceptor;
+import concurrent.Canal;
 import mensajes.Mensaje;
 import mensajes.PreparadoCS;
 import mensajes.TipoMensaje;
@@ -16,10 +16,8 @@ import java.net.SocketException;
 import java.util.ArrayList;
 
 public class OyenteServidor extends Thread {
-    private final ObjectInputStream fin;
-    private final ObjectOutputStream fout;
-
     private final SharedBuffer consola;
+    private final Canal canal;
 
     private String name;
     private int puerto;
@@ -29,8 +27,7 @@ public class OyenteServidor extends Thread {
 
     // throws IOException ya que si hay algún error, directamente no se crea el objeto
     public OyenteServidor(ObjectOutputStream fout, ObjectInputStream fin, SharedBuffer buffer, Usuario self) throws IOException {
-        this.fin = fin;
-        this.fout = fout;
+        this.canal = new Canal(fin, fout);
 
         this.consola = buffer;
         
@@ -50,7 +47,7 @@ public class OyenteServidor extends Thread {
 
             while (Cliente.running && continua) {
 
-                msg = (Mensaje) fin.readObject();
+                msg = (Mensaje) canal.read();
 
                 tipo = msg.getTipo();
                 sender = msg.getSender();
@@ -87,26 +84,16 @@ public class OyenteServidor extends Thread {
                     case EMITIR_CANCION:
                         Mensaje.Content data = (Mensaje.Content) msg.getContent();
 
-                        new Emisor(Integer.parseInt(data.getAddress()), consola, self).start();
+                        new Emisor(Integer.parseInt(data.getAddress()), consola, this.canal, self).start();
                         assert receiver.equals(this.name);
-                        fout.writeObject(new PreparadoCS(receiver, sender, data.getAddress(), data.getId()));
+                        canal.write(new PreparadoCS(receiver, sender, data.getAddress(), data.getId()));
 
                         break;
 
                     case PREPARADO_SC:
                         Mensaje.Content content = (Mensaje.Content) msg.getContent();
 
-                        new Receptor(content.getAddress(), consola, content.getId(), self).start();
-
-                        // TODO podemos usar Canal; pasar fout al Receptor
-                        sleep(1000);  // a falta de sincronizar arriba y abajo
-
-                        // can puede ser null si el receptor no ha completado su funcion
-
-                        // actualizamos siempre, asumiendo que no ha habido error en la transmisión
-                        Cancion can = self.getCancion(content.getId());
-                        // Se manda al servidor un mensaje de que se quiere actualizar las canciones del cliente
-                        fout.writeObject(new ActualizarCancReceptor(name, server, can));
+                        new Receptor(content.getAddress(), consola, this.canal, content.getId(), self).start();
 
                         break;
 
@@ -148,8 +135,7 @@ public class OyenteServidor extends Thread {
             throw new RuntimeException(e);
         } finally {
             try {
-                fin.close();
-                fout.close();
+                canal.close();
             } catch (IOException e) {
                 // no se pudo cerrar socket
             }

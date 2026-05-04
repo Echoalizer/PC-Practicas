@@ -1,9 +1,6 @@
 package servidor;
 
-import concurrent.Canal;
-import concurrent.Consola;
-import concurrent.ListaConcurrente;
-import concurrent.MapaConcurrente;
+import concurrent.*;
 import producersConsumers.SharedBuffer;
 import utils.Cancion;
 import utils.Usuario;
@@ -26,13 +23,13 @@ public class Servidor {
     private final ListaConcurrente<Usuario> usuarios;
     private final ListaConcurrente<Cancion> canciones;
 
-    // TODO permitir varios usuarios
     // canciones indexadas por username
     private final MapaConcurrente<ArrayList<String>> canciones_por_usuario;
 
     private final MapaConcurrente<Canal> canales;
 
-//    private final ArrayList<LockedString> puertos;
+    private final ArrayList<LockedString> puertos;
+    private int puertoActual = 0;
 
 
     public Servidor(ServerSocket s) {
@@ -46,6 +43,15 @@ public class Servidor {
 
         this.buffer = new SharedBuffer(2);  // tamaño del buffer
         new Consola(buffer).start();
+
+        this.puertos = new ArrayList<>(10);
+
+        String k = "100";
+        for (int i = 0; i < 10; i++) {
+            this.puertos.add(new LockedString(k));
+            k = (Integer.parseInt(k) + 1) + "";
+        }
+
     }
 
 
@@ -203,5 +209,11 @@ public class Servidor {
 
     public boolean borrarCanal(String username) throws InterruptedException {
         return this.canales.borrar(username);
+    }
+
+    public LockedString getNextPort() {
+        LockedString port = this.puertos.get(puertoActual);
+        puertoActual = (puertoActual + 1) % this.puertos.size();
+        return port;
     }
 }

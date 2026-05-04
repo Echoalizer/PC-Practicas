@@ -4,7 +4,7 @@ import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Set;
 
-// TODO compartir entre los Threads del cliente
+
 public class Usuario implements Serializable {
     private String username;
     private String ipAddress;

@@ -1,6 +1,7 @@
 package servidor;
 
 import concurrent.Canal;
+import concurrent.LockedString;
 import mensajes.*;
 import producersConsumers.SharedBuffer;
 import utils.Cancion;
@@ -24,6 +25,8 @@ public class OyenteCliente extends Thread {
     // el nombre puede ser confuso pero ayuda a la legibilidad en el switch de mensajes
     private final SharedBuffer consola;
     private final Servidor servidor;
+
+    private LockedString puerto;
 
 
     // throws IOException ya que si hay algún error, directamente no se crea el objeto
@@ -93,13 +96,15 @@ public class OyenteCliente extends Thread {
                             if (propietario == null) {
                                 this.consola.enviar("ERROR %s - No existe la cancion %s.\n".formatted(name, cancion));
                             } else {
-                                if (!sender.equals(receiver)) {
-                                    this.consola.enviar(name + " - Solicitud de conexión: " + sender + " --- " + receiver + "\n");
-                                    canal = this.servidor.getCanal(receiver);
-//                                    String puerto = servidor.getPuerto(id);
-                                    // TODO obtener puerto del cliente
-                                    String puerto = "991";
-                                    canal.write(new EmitirCancion(sender, propietario, puerto, cancion));
+                                if (!sender.equals(propietario)) {
+                                    this.consola.enviar(name + " - Solicitud de conexión: " + sender + " --- " + propietario + "\n");
+                                    canal = this.servidor.getCanal(propietario);
+
+                                    // puerto asignado por el servidor
+                                    this.puerto = this.servidor.getNextPort();
+                                    String puertoReal = this.puerto.get(id);
+                                    this.consola.enviar("DEBUG puerto asignado a %d: %s\n".formatted(id, puertoReal));
+                                    canal.write(new EmitirCancion(sender, propietario, puertoReal, cancion));
                                     // enviar error si esto falla ?
                                 }
                                 // else el cliente ha pedido una cancion que ya tiene
@@ -125,9 +130,18 @@ public class OyenteCliente extends Thread {
                         	Usuario usuarioReceptor = servidor.getUsuario(sender);
                         	servidor.update(c.getId(), usuarioReceptor);
 
+                            this.puerto.returnLock(id);
+                            this.consola.enviar("DEBUG Se ha devuelto el puerto desde OC %d\n".formatted(id));
+
                             canalCliente.write(new ConfirmacionActualizacionCanc(server, sender));
                         	break;
-                            
+
+                        case DEVOLVER_PUERTO_EMISOR:
+
+                            this.consola.enviar("DEBUG Se ha devuelto el puerto\n");
+//                            this.puerto.returnLock(id);
+                            break;
+
                             
                         case COMPROBAR_CANCION_CS:
                         	this.consola.enviar("Se va a comprobar si el servidor tiene ya esa cancion\n");
