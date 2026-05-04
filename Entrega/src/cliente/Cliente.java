@@ -84,7 +84,7 @@ public class Cliente {
             oyente.start();
         } catch (IOException e) {
             try {
-                this.consola.enviar("se ha producido un error: %s\n".formatted(e.getMessage()));
+                this.consola.enviar("se ha producido un error: %s".formatted(e.getMessage()));
             } catch (InterruptedException ex) {
                 throw new RuntimeException(ex);
             }
@@ -101,7 +101,7 @@ public class Cliente {
             fout.writeObject(new Conexion(ip, "server", self));
         } catch (IOException e) {
             try {
-                this.consola.enviar("ERROR El cliente no ha podido mandar el mensaje de CONEXION\n");
+                this.consola.enviar("ERROR El cliente no ha podido mandar el mensaje de CONEXION");
             } catch (InterruptedException ex) {
                 throw new RuntimeException(ex);
             }
@@ -119,7 +119,7 @@ public class Cliente {
             s.close();
         } catch (IOException e) {
             try {
-                this.consola.enviar("se ha producido un error: %s\n".formatted(e.getMessage()));
+                this.consola.enviar("se ha producido un error: %s".formatted(e.getMessage()));
             } catch (InterruptedException ex) {
                 throw new RuntimeException(ex);
             }
@@ -186,14 +186,14 @@ public class Cliente {
                     }
 
                 } catch (IOException e) {
-                    consola.enviar("ERROR se ha producido un error: %s\n".formatted(e.getMessage()));
+                    consola.enviar("ERROR se ha producido un error: %s".formatted(e.getMessage()));
                 }
             }
 
             try {
                 reader.close();
             } catch (Exception e) {
-                consola.enviar("ERROR no se pudo cerrar el scanner\n");
+                consola.enviar("ERROR no se pudo cerrar el scanner");
                 throw new RuntimeException(e);
             }
 
