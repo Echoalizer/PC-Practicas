@@ -48,14 +48,14 @@ public class Emisor extends Thread {
 
                 switch (tipo) {
                     case CONEXION_CC:
-                        consola.enviar("Se ha establecido la conexion p2p\n");
+                        consola.enviar("Se ha establecido la conexion p2p");
                         this.fout.writeObject(new ConfirmacionConexion(null, null));
                         break;
 
                     case SOLICITUD_CANCION:
                         // obtener id
 //                        Cancion c = user.get(id);
-                        consola.enviar("DEBUG envio de cancion\n");
+                        consola.enviar("DEBUG envio de cancion");
                         this.fout.writeObject(new RespuestaCancion(null, null, new Cancion("215", "Hello", "Adele")));
                         break;
 
@@ -68,7 +68,7 @@ public class Emisor extends Thread {
 
                 }
             }
-            consola.enviar("DEBUG Finalizada conexion p2p\n");
+            consola.enviar("DEBUG Finalizada conexion p2p");
             this.fout.close();
             this.fin.close();
 

@@ -50,11 +50,11 @@ public class OyenteServidor extends Thread {
 
                 switch (tipo) {
                     case CONFIRMACION_CONEXION:
-                        consola.enviar("Se ha establecido conexion con el servidor\n");
+                        consola.enviar("Se ha establecido conexion con el servidor");
                         break;
 
                     case RESPUESTA_LISTA_USUARIOS:
-                        consola.enviar("Lista de usuarios\n");
+                        consola.enviar("Lista de usuarios");
                         ArrayList<Usuario> usuarios = (ArrayList<Usuario>) msg.getContent();
                         StringBuilder listaUsuarios = new StringBuilder();
                         for (Usuario u : usuarios) {
@@ -64,7 +64,7 @@ public class OyenteServidor extends Thread {
                         break;
 
                     case RESPUESTA_LISTA_CANCIONES:
-                        consola.enviar("Lista de canciones\n");
+                        consola.enviar("Lista de canciones");
                         ArrayList<Cancion> canciones = (ArrayList<Cancion>) msg.getContent();
                         StringBuilder listaCanciones = new StringBuilder();
                         for (Cancion c : canciones) {
@@ -87,7 +87,7 @@ public class OyenteServidor extends Thread {
                         break;
 
                     case DESCONEXION:
-                        consola.enviar("ERROR Se ha desconectado el servidor.\n");
+                        consola.enviar("ERROR Se ha desconectado el servidor.");
                         continua = false;
                         break;
 
@@ -100,7 +100,7 @@ public class OyenteServidor extends Thread {
                 fin.close();
                 fout.close();
             } catch (IOException e) {
-                consola.enviar("ERROR no se pudo cerrar el socket\n");
+                consola.enviar("ERROR no se pudo cerrar el socket");
             }
 
         } catch (Exception e) {

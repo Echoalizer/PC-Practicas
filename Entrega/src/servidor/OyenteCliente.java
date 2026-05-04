@@ -62,9 +62,9 @@ public class OyenteCliente extends Thread {
                     switch (tipo) {
                         case CONEXION_CS:
                             Usuario user = (Usuario) msg.getContent();
-                            this.consola.enviar(name + " - Conexión establecida\n");
+                            this.consola.enviar(name + " - Conexión establecida");
                             if (!this.servidor.anadirUsuario(user))
-                                this.consola.enviar("El usuario %s ya existe.\n".formatted(user.getUsername()));
+                                this.consola.enviar("El usuario %s ya existe.".formatted(user.getUsername()));
                             for (Cancion c : user.getCanciones()) {
                                 this.servidor.anadirCancion(c);
                                 this.servidor.update(c.getId(), user);
@@ -87,7 +87,7 @@ public class OyenteCliente extends Thread {
                             String cancion = (String) msg.getContent();
                             Usuario propietario = this.servidor.getUsuarioCancion(cancion);
                             if (propietario == null) {
-                                this.consola.enviar("ERROR %s - No existe la cancion %s.\n".formatted(name, cancion));
+                                this.consola.enviar("ERROR %s - No existe la cancion %s.".formatted(name, cancion));
                             } else {
 
                                 receiver = propietario.getUsername();
@@ -108,7 +108,7 @@ public class OyenteCliente extends Thread {
                             break;
 
                         case DESCONEXION:
-                            this.consola.enviar(name + " - Se ha desconectado el cliente\n");
+                            this.consola.enviar(name + " - Se ha desconectado el cliente");
                             continua = false;
                             break;
 
@@ -118,7 +118,7 @@ public class OyenteCliente extends Thread {
                 }
 
             } catch (EOFException e) {
-                this.consola.enviar("ERROR %s - El cliente se ha desconectado.\n".formatted(name));
+                this.consola.enviar("ERROR %s - El cliente se ha desconectado.".formatted(name));
             } catch (Exception e) {
                 this.consola.enviar("ERROR %s - %s.".formatted(name, e.getMessage()));
             } finally {
