@@ -14,9 +14,7 @@ import java.net.ServerSocket;
 import java.net.Socket;
 
 public class Emisor extends Thread {
-
-    private ObjectInputStream fin;
-    private ObjectOutputStream fout;
+    private Canal canal;
 
     private final SharedBuffer consola;
     private final Canal canalServidor;
@@ -39,9 +37,13 @@ public class Emisor extends Thread {
     @Override
     public void run() {  // que pasa si dos clientes piden dato
         try (ServerSocket listen = new ServerSocket(port)) {
+            consola.enviar("DEBUG Emisor escuchando en %s:%d\n".formatted(listen.getLocalSocketAddress(), port));
             Socket s = listen.accept();
-            this.fin = new ObjectInputStream(s.getInputStream());
-            this.fout = new ObjectOutputStream(s.getOutputStream());
+
+            this.canal = new Canal(
+                    new ObjectInputStream(s.getInputStream()),
+                    new ObjectOutputStream(s.getOutputStream()));
+
         } catch (Exception e) {
             throw new RuntimeException("no se pudo crear Emisor");
         }
@@ -52,7 +54,7 @@ public class Emisor extends Thread {
             boolean open = true;
             while (open) {
 
-                Mensaje msg = (Mensaje) fin.readObject();
+                Mensaje msg = (Mensaje) canal.read();
 
                 TipoMensaje tipo = msg.getTipo();
                 String sender = msg.getSender();
@@ -60,7 +62,7 @@ public class Emisor extends Thread {
                 switch (tipo) {
                     case CONEXION_CC:
                         consola.enviar("Se ha establecido la conexion p2p.\n");
-                        this.fout.writeObject(new ConfirmacionConexion(name, sender));
+                        this.canal.write(new ConfirmacionConexion(name, sender));
                         break;
 
                     case SOLICITUD_CANCION:
@@ -73,7 +75,7 @@ public class Emisor extends Thread {
                         } else {  // Si sí tiene la cancion
                         	consola.enviar("DEBUG envio de cancion\n");
                         	Cancion c = self.getCancion(id);
-                            this.fout.writeObject(new RespuestaCancion(name, sender, c));
+                            this.canal.write(new RespuestaCancion(name, sender, c));
 
                             // enviar a servidor: devolver puerto
                             this.canalServidor.write(new DevolverPuertoEmisor(name, "server"));
@@ -96,8 +98,7 @@ public class Emisor extends Thread {
             throw new RuntimeException(e);
         } finally {
             try {
-                this.fout.close();
-                this.fin.close();
+                this.canal.close();
             } catch (IOException e) {
                 // q pena
             }

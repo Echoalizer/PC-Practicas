@@ -13,12 +13,11 @@ import java.net.Socket;
 
 public class Receptor extends Thread {
 
-    private ObjectInputStream fin;
-    private ObjectOutputStream fout;
+    private Canal canal;
 
     SharedBuffer consola;
 
-    private final int port;
+    private final String addr;
     private final String idCancion;
     private final String name;
 
@@ -27,8 +26,8 @@ public class Receptor extends Thread {
     private Usuario self;
 
 
-    public Receptor(String port, SharedBuffer buffer, Canal canalServ, String idCancion, Usuario self) {
-        this.port = Integer.parseInt(port);
+    public Receptor(String addr, SharedBuffer buffer, Canal canalServ, String idCancion, Usuario self) {
+        this.addr = addr;
         this.consola = buffer;
         this.idCancion = idCancion;
         this.self = self;
@@ -39,9 +38,18 @@ public class Receptor extends Thread {
     @Override
     public void run() {
         try {
-            Socket s = new Socket("localhost", port);
-            this.fout = new ObjectOutputStream(s.getOutputStream());
-            this.fin = new ObjectInputStream(s.getInputStream());
+
+            String[] splitAddress = this.addr.split(":");
+            String address = splitAddress[0];
+            int port = Integer.parseInt(splitAddress[1]);
+            consola.enviar("DEBUG Conectando con %s:%d\n".formatted(address, port));
+
+            Socket s = new Socket(address, port);
+
+            this.canal = new Canal(
+                    new ObjectOutputStream(s.getOutputStream()),
+                    new ObjectInputStream(s.getInputStream()));
+
         } catch (Exception e) {
             throw new RuntimeException("no se pudo crear Receptor: %s".formatted(e.getMessage()));
         }
@@ -49,12 +57,12 @@ public class Receptor extends Thread {
         try {
             consola.enviar("DEBUG receptor listo\n");
 
-            fout.writeObject(new ConexionCC(name, null));
+            canal.write(new ConexionCC(name, null));
 
             boolean open = true;
             while (open) {
 
-                Mensaje msg = (Mensaje) fin.readObject();
+                Mensaje msg = (Mensaje) canal.read();
 
                 TipoMensaje tipo = msg.getTipo();
                 String sender = msg.getSender();
@@ -63,7 +71,7 @@ public class Receptor extends Thread {
                     case CONFIRMACION_CONEXION:
                         consola.enviar("Se ha establecido la conexion p2p\n");
                         // no tenemos id cancion
-                        this.fout.writeObject(new SolicitudCancion(name, sender, idCancion));
+                        this.canal.write(new SolicitudCancion(name, sender, idCancion));
                         break;
 
                     case RESPUESTA_CANCION_CC:
@@ -76,7 +84,7 @@ public class Receptor extends Thread {
                         this.canalServ.write(new ActualizarCancReceptor(name, "server", cancion));
 
                         // mensaje desconexionCC?
-                        this.fout.writeObject(new Desconexion(name, sender, null));
+                        this.canal.write(new Desconexion(name, sender, null));
                         open = false;
                         break;
 
@@ -86,8 +94,7 @@ public class Receptor extends Thread {
                 }
             }
             consola.enviar("DEBUG Finalizada conexion p2p\n");
-            this.fout.close();
-            this.fin.close();
+            this.canal.close();
 
         } catch (Exception e) {
             throw new RuntimeException(e);

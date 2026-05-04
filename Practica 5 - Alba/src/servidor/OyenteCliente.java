@@ -113,7 +113,8 @@ public class OyenteCliente extends Thread {
 
                         case PREPARADO_CS:
                             Mensaje.Content content = (Mensaje.Content) msg.getContent();
-                            String address = content.getAddress();  // address = puerto
+                            String address = content.getAddress();  // address completa ip + puerto
+                            this.consola.enviar("DEBUG dirección del cliente emisor @%s: %s\n".formatted(name, address));
 
                             canal = servidor.getCanal(receiver);
                             this.consola.enviar(name + " - Se creará conexión:  " + sender + " --- " + receiver + "\n");

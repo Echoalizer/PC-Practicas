@@ -9,8 +9,10 @@ import utils.Usuario;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.net.Socket;
-import java.net.SocketException;
+import java.net.*;
+import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.List;
 import java.util.Scanner;
 
 
@@ -24,6 +26,8 @@ public class Cliente {
 
     private Usuario self;
     private String name;
+
+    private String netIp;
 
     // TODO proteger con lock
     public static volatile boolean running = true;
@@ -85,7 +89,14 @@ public class Cliente {
     // hace de productor al enviar mensajes a la consola
     public void run() {
         try {
+            List<Inet4Address> networkAddrs = getAddresses();
+            this.consola.enviar("DEBUG IPs de la interfaz de red: %s\n".formatted(networkAddrs));
+            this.netIp = networkAddrs.stream()
+                    .filter((a) -> a.getHostAddress().startsWith("192"))
+                    .findFirst().get().getHostAddress();
+
             String ip = s.getLocalSocketAddress().toString();
+            this.consola.enviar("DEBUG Cliente conectado desde %s (local %s)\n".formatted(netIp, ip));
             this.consola.enviar("Introduce tu nombre de usuario: ");
             String username = this.reader.nextLine();
             this.self = new Usuario(username, ip);
@@ -93,7 +104,7 @@ public class Cliente {
             this.name = username;
 
             // comprobar que no se envia el mensaje antes de terminmar de crear oyente
-            OyenteServidor oyente = new OyenteServidor(fout, fin, consola, self);
+            OyenteServidor oyente = new OyenteServidor(fout, fin, consola, self, netIp);
             oyente.start();
 
             // Lo primero que va a hacer el cliente cuando se cree, es mandar un mensaje de que se ha conectado al servidor
@@ -127,6 +138,22 @@ public class Cliente {
         // de esta manera no se quedan hilos colgando.
         // podriamos apagar el hilo OyenteServidor transmitiendo el mensaje de conexion cerrada.
 //        System.exit(0);
+    }
+
+    private static List<Inet4Address> getAddresses() throws SocketException {
+        List<Inet4Address> networkAddrs = new ArrayList<>();
+        var netInterfaces = NetworkInterface.getNetworkInterfaces();
+        while (netInterfaces.hasMoreElements()) {
+            NetworkInterface nInterface = netInterfaces.nextElement();
+            Enumeration<InetAddress> addresses = nInterface.getInetAddresses();
+            while (addresses.hasMoreElements()) {
+                InetAddress addr = addresses.nextElement();
+                if (addr instanceof Inet4Address) {
+                    networkAddrs.add((Inet4Address) addr);
+                }
+            }
+        }
+        return networkAddrs;
     }
 
     private void menu() {

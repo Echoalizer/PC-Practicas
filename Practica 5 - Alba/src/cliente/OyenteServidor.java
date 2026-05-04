@@ -20,19 +20,21 @@ public class OyenteServidor extends Thread {
     private final Canal canal;
 
     private String name;
-    private int puerto;
+    private String netAddr = "localhost";
     
     private Usuario self;
  
 
     // throws IOException ya que si hay algún error, directamente no se crea el objeto
-    public OyenteServidor(ObjectOutputStream fout, ObjectInputStream fin, SharedBuffer buffer, Usuario self) throws IOException {
+    public OyenteServidor(ObjectOutputStream fout, ObjectInputStream fin, SharedBuffer buffer, Usuario self, String netAddr) throws IOException {
         this.canal = new Canal(fin, fout);
 
         this.consola = buffer;
         
         this.self = self;
         this.name = self.getUsername();
+
+        if (netAddr != null) this.netAddr = netAddr;
     }
 
     @Override
@@ -86,7 +88,8 @@ public class OyenteServidor extends Thread {
 
                         new Emisor(Integer.parseInt(data.getAddress()), consola, this.canal, self).start();
                         assert receiver.equals(this.name);
-                        canal.write(new PreparadoCS(receiver, sender, data.getAddress(), data.getId()));
+                        String addr = this.netAddr + ":" + data.getAddress();
+                        canal.write(new PreparadoCS(receiver, sender, addr, data.getId()));
 
                         break;
 
