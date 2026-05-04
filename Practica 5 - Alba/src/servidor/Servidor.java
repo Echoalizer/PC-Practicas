@@ -28,7 +28,7 @@ public class Servidor {
 
     // TODO permitir varios usuarios
     // canciones indexadas por username
-    private final MapaConcurrente<Usuario> canciones_por_usuario;
+    private final MapaConcurrente<ArrayList<String>> canciones_por_usuario;
 
     private final MapaConcurrente<Canal> canales;
 
@@ -163,17 +163,34 @@ public class Servidor {
         return this.canciones.borrar(cancion);
     }
 
-    public Usuario getUsuarioCancion(String cancion) throws InterruptedException {
+    public String getUsuarioCancion(String cancion) throws InterruptedException {
 //        var lista = this.getUsuarioCancion(cancion);
-        return this.canciones_por_usuario.leer(cancion);
+        var usuarios = this.canciones_por_usuario.leer(cancion);
+
+        return usuarios == null ? null : usuarios.get(0);
+
     }
 
     public void update(String cancion, Usuario usuario) throws IOException, InterruptedException {
-        this.canciones_por_usuario.escribir(cancion, usuario);
+        var lista = this.canciones_por_usuario.leer(cancion);
+        if (lista == null) lista = new ArrayList<>();
+
+        lista.add(usuario.getUsername());
+        this.canciones_por_usuario.escribir(cancion, lista);
+        this.usuarios.borrar(usuario);
+        usuario.addCancion(new Cancion(cancion, null, null));
+        this.anadirUsuario(usuario);
     }
 
-    public void remove(String cancion) throws InterruptedException {
+    public void remove(String cancion, String usuario) throws InterruptedException {
+        var usuarios = this.canciones_por_usuario.leer(cancion);
+        usuarios.remove(usuario);
         this.canciones_por_usuario.borrar(cancion);
+        if (usuarios.isEmpty()) {
+            this.canciones.borrar(new Cancion(cancion, null, null));
+        } else {
+            this.canciones_por_usuario.escribir(cancion, usuarios);
+        }
     }
 
     public Canal getCanal(String username) throws InterruptedException {

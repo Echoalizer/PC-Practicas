@@ -106,7 +106,7 @@ public class OyenteServidor extends Thread {
                         // actualizamos siempre, asumiendo que no ha habido error en la transmisión
                         Cancion can = self.getCancion(content.getId());
                         // Se manda al servidor un mensaje de que se quiere actualizar las canciones del cliente
-                        fout.writeObject(new ActualizarCancReceptor(sender, server, can));
+                        fout.writeObject(new ActualizarCancReceptor(name, server, can));
 
                         break;
 

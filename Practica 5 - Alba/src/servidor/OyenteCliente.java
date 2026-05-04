@@ -89,19 +89,17 @@ public class OyenteCliente extends Thread {
 
                         case SOLICITUD_CANCION:
                             String cancion = (String) msg.getContent();
-                            Usuario propietario = this.servidor.getUsuarioCancion(cancion);
+                            String propietario = this.servidor.getUsuarioCancion(cancion);
                             if (propietario == null) {
                                 this.consola.enviar("ERROR %s - No existe la cancion %s.\n".formatted(name, cancion));
                             } else {
-
-                                receiver = propietario.getUsername();
                                 if (!sender.equals(receiver)) {
                                     this.consola.enviar(name + " - Solicitud de conexión: " + sender + " --- " + receiver + "\n");
                                     canal = this.servidor.getCanal(receiver);
 //                                    String puerto = servidor.getPuerto(id);
                                     // TODO obtener puerto del cliente
                                     String puerto = "991";
-                                    canal.write(new EmitirCancion(sender, receiver, puerto, cancion));
+                                    canal.write(new EmitirCancion(sender, propietario, puerto, cancion));
                                     // enviar error si esto falla ?
                                 }
                                 // else el cliente ha pedido una cancion que ya tiene
@@ -160,9 +158,8 @@ public class OyenteCliente extends Thread {
 
 //                            this.consola.enviar("borrando %s\n usuario\n".formatted(user2));
                             for (Cancion c2 : user2.getCanciones()) {
-                                this.servidor.borrarCancion(c2);
-                                this.servidor.remove(c2.getId());
-                                this.consola.enviar("DEBUG %s borrada\n".formatted(c2.getId()));
+                                this.servidor.remove(c2.getId(), user2.getUsername());
+//                                this.consola.enviar("DEBUG %s borrada\n".formatted(c2.getId()));
                             }
                             this.servidor.borrarUsuario(user2);
                             this.consola.enviar("DEBUG usuario %s borrado.\n".formatted(user2.getUsername()));
