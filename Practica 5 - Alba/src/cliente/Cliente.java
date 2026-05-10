@@ -92,7 +92,9 @@ public class Cliente {
             String ip = s.getLocalSocketAddress().toString();
 
             String netIp = networkAddrs.stream()
-                    .filter((a) -> a.getHostAddress().startsWith("10") || a.getHostAddress().startsWith("192"))
+                    .filter((a) -> a.getHostAddress().startsWith("10.")
+                            || a.getHostAddress().startsWith("172.16.")
+                            || a.getHostAddress().startsWith("192.168."))
                     .findFirst().orElse((Inet4Address) s.getLocalAddress()).getHostAddress();
 
             this.consola.enviar("DEBUG Cliente conectado desde %s (local %s)\n".formatted(netIp, ip));
