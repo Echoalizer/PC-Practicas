@@ -10,8 +10,6 @@ import utils.Usuario;
 
 import javax.naming.OperationNotSupportedException;
 import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.net.SocketException;
 import java.util.ArrayList;
 
@@ -26,8 +24,8 @@ public class OyenteServidor extends Thread {
  
 
     // throws IOException ya que si hay algún error, directamente no se crea el objeto
-    public OyenteServidor(ObjectOutputStream fout, ObjectInputStream fin, SharedBuffer buffer, Usuario self, String netAddr) throws IOException {
-        this.canal = new Canal(fin, fout);
+    public OyenteServidor(Canal canal, SharedBuffer buffer, Usuario self, String netAddr) throws IOException {
+        this.canal = canal;
 
         this.consola = buffer;
         

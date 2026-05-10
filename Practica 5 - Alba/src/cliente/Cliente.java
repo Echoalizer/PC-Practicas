@@ -1,5 +1,6 @@
 package cliente;
 
+import concurrent.Canal;
 import concurrent.Consola;
 import mensajes.*;
 import producersConsumers.SharedBuffer;
@@ -18,8 +19,7 @@ import java.util.Scanner;
 
 public class Cliente {
     private final Socket s;
-    private final ObjectOutputStream fout;
-    private final ObjectInputStream fin;
+    private final Canal canal;
 
     private final Scanner reader;
     private final SharedBuffer consola;
@@ -34,8 +34,7 @@ public class Cliente {
 
     public Cliente(Socket s, ObjectOutputStream fout, ObjectInputStream fin, Scanner in) {
         this.s = s;
-        this.fout = fout;
-        this.fin = fin;
+        this.canal = new Canal(fout, fin);
         this.reader = in;
 
         this.consola = new SharedBuffer(2);  // tamaño del buffer
@@ -92,7 +91,7 @@ public class Cliente {
             List<Inet4Address> networkAddrs = getAddresses();
             this.consola.enviar("DEBUG IPs de la interfaz de red: %s\n".formatted(networkAddrs));
             this.netIp = networkAddrs.stream()
-                    .filter((a) -> a.getHostAddress().startsWith("192"))
+                    .filter((a) -> a.getHostAddress().startsWith("10") || a.getHostAddress().startsWith("192"))
                     .findFirst().get().getHostAddress();
 
             String ip = s.getLocalSocketAddress().toString();
@@ -104,11 +103,11 @@ public class Cliente {
             this.name = username;
 
             // comprobar que no se envia el mensaje antes de terminmar de crear oyente
-            OyenteServidor oyente = new OyenteServidor(fout, fin, consola, self, netIp);
+            OyenteServidor oyente = new OyenteServidor(canal, consola, self, netIp);
             oyente.start();
 
             // Lo primero que va a hacer el cliente cuando se cree, es mandar un mensaje de que se ha conectado al servidor
-            fout.writeObject(new Conexion(ip, "server", self));
+            canal.write(new Conexion(ip, "server", self));
         } catch (IOException e) {
             try {
                 this.consola.enviar("ERROR El cliente no ha podido mandar el mensaje de CONEXION\n");
@@ -124,8 +123,7 @@ public class Cliente {
 
         //Se cierra el socket y los canales
         try {
-            fin.close();
-            fout.close();
+            canal.close();
             s.close();
         } catch (IOException e) {
             try {
@@ -183,7 +181,7 @@ public class Cliente {
 
                     switch (option) {
                         case 1:
-                            fout.writeObject(new Desconexion(name, server, self));
+                            canal.write(new Desconexion(name, server, self));
 
                             // Una vez se ha recibido por parte del servidor que se va a desconectar el cliente -> Se cambia de opcion
                             // para asi salir del bucle y cerrar los sockets y tod
@@ -191,10 +189,10 @@ public class Cliente {
                             running = false;
                             break;
                         case 2:
-                            fout.writeObject(new SolicitudListaUsuarios(name, server));
+                            canal.write(new SolicitudListaUsuarios(name, server));
                             break;
                         case 3:
-                            fout.writeObject(new SolicitudListaCanciones(name, server));
+                            canal.write(new SolicitudListaCanciones(name, server));
                             break;
                         case 4:
                             consola.enviar("Lista de canciones propias: \n");
@@ -203,7 +201,7 @@ public class Cliente {
                         case 5:
                             consola.enviar("Id de la cancion: ");
                             String id = reader.nextLine();
-                            fout.writeObject(new SolicitudCancion(name, server, id)); // receiver null porque va dirigido a un cliente que aun no conocemos
+                            canal.write(new SolicitudCancion(name, server, id)); // receiver null porque va dirigido a un cliente que aun no conocemos
                             break;
                         case 6:
                             consola.enviar("Titulo: ");
@@ -214,7 +212,7 @@ public class Cliente {
                             String idCancion = "" + (titulo.hashCode() + artista.hashCode());
                             //Hay que comprobar que esa cancion no este ya en el servidor 
                             Cancion c = new Cancion(idCancion, titulo, artista);
-                            fout.writeObject(new ComprobarCancionCS(c, name, server));
+                            canal.write(new ComprobarCancionCS(c, name, server));
                             break;
 
                         default:

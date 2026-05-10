@@ -28,6 +28,7 @@ public class Servidor {
 
     private final MapaConcurrente<Canal> canales;
 
+    // implementar con productores-consumidores
     private final ArrayList<LockedString> puertos;
     private int puertoActual = 0;
 
@@ -84,8 +85,7 @@ public class Servidor {
 
     public void run() throws IOException {
         Socket ss;
-        int k = 0;  // TODO concurrente para volver a bajar el numero de cliente
-        // while (alive)
+        int k = 0;
         while (true) {
             ss = srvSocket.accept();
             k++;
@@ -98,7 +98,6 @@ public class Servidor {
 
                 oyente.start();
             } catch (IOException e) {
-                // TODO fix catch
                 try {
                     this.buffer.enviar("ERROR Error al conectar con el cliente: %s\n".formatted(e.getMessage()));
                 } catch (InterruptedException ex) {
