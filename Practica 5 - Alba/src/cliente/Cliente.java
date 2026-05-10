@@ -27,8 +27,6 @@ public class Cliente {
     private Usuario self;
     private String name;
 
-    private String netIp;
-
     // TODO proteger con lock
     public static volatile boolean running = true;
 
@@ -90,11 +88,13 @@ public class Cliente {
         try {
             List<Inet4Address> networkAddrs = getAddresses();
             this.consola.enviar("DEBUG IPs de la interfaz de red: %s\n".formatted(networkAddrs));
-            this.netIp = networkAddrs.stream()
-                    .filter((a) -> a.getHostAddress().startsWith("10") || a.getHostAddress().startsWith("192"))
-                    .findFirst().get().getHostAddress();
 
             String ip = s.getLocalSocketAddress().toString();
+
+            String netIp = networkAddrs.stream()
+                    .filter((a) -> a.getHostAddress().startsWith("10") || a.getHostAddress().startsWith("192"))
+                    .findFirst().orElse((Inet4Address) s.getLocalAddress()).getHostAddress();
+
             this.consola.enviar("DEBUG Cliente conectado desde %s (local %s)\n".formatted(netIp, ip));
             this.consola.enviar("Introduce tu nombre de usuario: ");
             String username = this.reader.nextLine();
@@ -102,7 +102,7 @@ public class Cliente {
             self.addCancion(new Cancion("%d".formatted(2 * username.hashCode()), username, username));
             this.name = username;
 
-            // comprobar que no se envia el mensaje antes de terminmar de crear oyente
+            // comprobar que no se envia el mensaje antes de terminar de crear oyente
             OyenteServidor oyente = new OyenteServidor(canal, consola, self, netIp);
             oyente.start();
 
