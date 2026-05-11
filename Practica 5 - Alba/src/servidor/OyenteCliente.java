@@ -1,7 +1,6 @@
 package servidor;
 
 import concurrent.Canal;
-import concurrent.LockedString;
 import mensajes.*;
 import producersConsumers.SharedBuffer;
 import utils.Cancion;
@@ -26,7 +25,7 @@ public class OyenteCliente extends Thread {
     private final SharedBuffer consola;
     private final Servidor servidor;
 
-    private LockedString puerto;
+    private String puerto;
 
 
     // throws IOException ya que si hay algún error, directamente no se crea el objeto
@@ -101,10 +100,9 @@ public class OyenteCliente extends Thread {
                                     canal = this.servidor.getCanal(propietario);
 
                                     // puerto asignado por el servidor
-                                    this.puerto = this.servidor.getNextPort();
-                                    String puertoReal = this.puerto.get(id);
-                                    this.consola.enviar("DEBUG puerto asignado a %d: %s\n".formatted(id, puertoReal));
-                                    canal.write(new EmitirCancion(sender, propietario, puertoReal, cancion));
+                                    this.puerto = this.servidor.getPuerto(this.id);
+                                    this.consola.enviar("DEBUG puerto asignado a %d: %s\n".formatted(id, puerto));
+                                    canal.write(new EmitirCancion(sender, propietario, puerto, cancion));
                                     // enviar error si esto falla ?
                                 }
                                 // else el cliente ha pedido una cancion que ya tiene
@@ -131,7 +129,7 @@ public class OyenteCliente extends Thread {
                         	Usuario usuarioReceptor = servidor.getUsuario(sender);
                         	servidor.update(c.getId(), usuarioReceptor);
 
-                            this.puerto.returnLock(id);
+                            this.servidor.devolverPuerto(this.puerto, this.id);
                             this.consola.enviar("DEBUG Se ha devuelto el puerto desde OC %d\n".formatted(id));
 
                             canalCliente.write(new ConfirmacionActualizacionCanc(server, sender));

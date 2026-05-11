@@ -1,11 +1,11 @@
 package producersConsumers;
 
 public interface ProducerConsumerController {
-    void acquireProd() throws InterruptedException;
+    void acquireProd(int id) throws InterruptedException;
 
-    void acquireCons() throws InterruptedException;
+    void acquireCons(int id) throws InterruptedException;
 
-    void releaseProd();
+    void releaseProd(int id);
 
-    void releaseCons();
+    void releaseCons(int id);
 }

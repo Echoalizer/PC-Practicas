@@ -1,6 +1,10 @@
 package servidor;
 
-import concurrent.*;
+import concurrent.Canal;
+import concurrent.Consola;
+import concurrent.ListaConcurrente;
+import concurrent.MapaConcurrente;
+import producersConsumers.ControllerLock;
 import producersConsumers.SharedBuffer;
 import utils.Cancion;
 import utils.Usuario;
@@ -29,8 +33,7 @@ public class Servidor {
     private final MapaConcurrente<Canal> canales;
 
     // implementar con productores-consumidores
-    private final ArrayList<LockedString> puertos;
-    private int puertoActual = 0;
+    private final SharedBuffer puertos;
 
 
     public Servidor(ServerSocket s) {
@@ -45,12 +48,16 @@ public class Servidor {
         this.buffer = new SharedBuffer(2);  // tamaño del buffer
         new Consola(buffer).start();
 
-        this.puertos = new ArrayList<>(10);
-
-        String k = "100";
-        for (int i = 0; i < 10; i++) {
-            this.puertos.add(new LockedString(k));
-            k = (Integer.parseInt(k) + 1) + "";
+        this.puertos = new SharedBuffer(10, new ControllerLock(10));
+        try {
+            String k = "100";
+            for (int i = 0; i < 10; i++) {
+                // llenamos el buffer con los puertos disponibles
+                this.puertos.enviar(k);
+                k = (Integer.parseInt(k) + 1) + "";
+            }
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
         }
 
     }
@@ -210,9 +217,18 @@ public class Servidor {
         return this.canales.borrar(username);
     }
 
-    public LockedString getNextPort() {
-        LockedString port = this.puertos.get(puertoActual);
-        puertoActual = (puertoActual + 1) % this.puertos.size();
-        return port;
+    public String getPuerto(int id) {
+        try {
+            return this.puertos.extraer(id);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public void devolverPuerto(String puerto, int id) {
+        try {
+            this.puertos.enviar(puerto, id);
+        } catch (InterruptedException e) {
+        }
     }
 }

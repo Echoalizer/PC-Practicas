@@ -137,7 +137,7 @@ public class Cliente {
 
         // de esta manera no se quedan hilos colgando.
         // podriamos apagar el hilo OyenteServidor transmitiendo el mensaje de conexion cerrada.
-//        System.exit(0);
+        System.exit(0);
     }
 
     private static List<Inet4Address> getAddresses() throws SocketException {
