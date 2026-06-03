@@ -1,7 +1,10 @@
 package cliente;
 
+import concurrent.Canal;
 import mensajes.*;
+import producersConsumers.SharedBuffer;
 import utils.Cancion;
+import utils.Usuario;
 
 import javax.naming.OperationNotSupportedException;
 import java.io.ObjectInputStream;
@@ -10,49 +13,78 @@ import java.net.Socket;
 
 public class Receptor extends Thread {
 
-    private ObjectInputStream fin;
-    private ObjectOutputStream fout;
+    private Canal canal;
 
-    private final int port;
+    SharedBuffer consola;
 
-    public Receptor(String port) {
-        this.port = Integer.parseInt(port);
+    private final String addr;
+    private final String idCancion;
+    private final String name;
+
+    private final Canal canalServ;
+
+    private Usuario self;
+
+
+    public Receptor(String addr, SharedBuffer buffer, Canal canalServ, String idCancion, Usuario self) {
+        this.addr = addr;
+        this.consola = buffer;
+        this.idCancion = idCancion;
+        this.self = self;
+        this.name = self.getUsername();
+        this.canalServ = canalServ;
     }
 
     @Override
     public void run() {
         try {
-            Socket s = new Socket("localhost", port);
-            this.fout = new ObjectOutputStream(s.getOutputStream());
-            this.fin = new ObjectInputStream(s.getInputStream());
+
+            String[] splitAddress = this.addr.split(":");
+            String address = splitAddress[0];
+            int port = Integer.parseInt(splitAddress[1]);
+            consola.enviar("DEBUG Conectando con %s:%d\n".formatted(address, port));
+
+            Socket s = new Socket(address, port);
+
+            this.canal = new Canal(
+                    new ObjectOutputStream(s.getOutputStream()),
+                    new ObjectInputStream(s.getInputStream()));
+
         } catch (Exception e) {
-            throw new RuntimeException("no se pudo crear Receptor");
+            throw new RuntimeException("no se pudo crear Receptor: %s".formatted(e.getMessage()));
         }
 
         try {
+            consola.enviar("DEBUG receptor listo\n");
 
-            fout.writeObject(new ConexionCC(null, null));
+            canal.write(new ConexionCC(name, null));
 
             boolean open = true;
             while (open) {
 
-                Mensaje msg = (Mensaje) fin.readObject();
+                Mensaje msg = (Mensaje) canal.read();
 
                 TipoMensaje tipo = msg.getTipo();
+                String sender = msg.getSender();
 
                 switch (tipo) {
                     case CONFIRMACION_CONEXION:
-                        System.out.println("Se ha establecido conexion con el p2p");
+                        consola.enviar("Se ha establecido la conexion p2p\n");
                         // no tenemos id cancion
-                        this.fout.writeObject(new SolicitudCancion(null, null, null));
+                        this.canal.write(new SolicitudCancion(name, sender, idCancion));
                         break;
 
                     case RESPUESTA_CANCION_CC:
                         Cancion cancion = (Cancion) msg.getContent();
-                        System.out.println(cancion);
-                        System.out.println("que chula!!! muchas gracias!!!");
+                        consola.enviar("DEBUG Recibida: %s \n".formatted(cancion.toString()));
+                        // guardar cancion en el usuario
+                        self.addCancion(cancion);
 
-                        this.fout.writeObject(new DesconexionCC(null, null));
+                        // Se manda al servidor un mensaje de que se quiere actualizar las canciones del cliente
+                        this.canalServ.write(new ActualizarCancReceptor(name, "server", cancion));
+
+                        // mensaje desconexionCC?
+                        this.canal.write(new Desconexion(name, sender, null));
                         open = false;
                         break;
 
@@ -61,9 +93,8 @@ public class Receptor extends Thread {
 
                 }
             }
-            System.out.println("Se ha desconectado");
-            this.fout.close();
-            this.fin.close();
+            consola.enviar("DEBUG Finalizada conexion p2p\n");
+            this.canal.close();
 
         } catch (Exception e) {
             throw new RuntimeException(e);

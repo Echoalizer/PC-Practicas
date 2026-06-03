@@ -1,5 +1,6 @@
-package cliente;
+package concurrent;
 
+import cliente.Cliente;
 import producersConsumers.SharedBuffer;
 
 import java.io.PrintStream;
@@ -10,7 +11,7 @@ public class Consola extends Thread {
     private final PrintStream out = System.out;
     private final PrintStream err = System.err;
 
-    private boolean debug = false;
+    private boolean debug = true;
 
     public Consola(SharedBuffer buffer) {
         this.buffer = buffer;
@@ -23,18 +24,25 @@ public class Consola extends Thread {
 
     @Override
     public void run() {
-        while (true) {
+        while (Cliente.running) {  // no siempre llega la lectura a tiempo
             try {
                 String str = buffer.extraer();
                 if (str.startsWith("DEBUG")) {
-                    if (debug) out.println(str.substring(5));
+                    if (debug) out.print(str);
                 } else if (str.startsWith("ERROR"))
-                    err.println(str.substring(6));
-                else out.println(str);
+                    err.print(str.substring(6));
+                else out.print(str);
+                // usar print + \n
             } catch (InterruptedException e) {
-                System.err.println("Error de concurrencia en el controlador");
+                err.println("Error de concurrencia en el controlador");
             }
         }
+        if (debug) out.println("DEBUG Cerrando consola...");
+    }
+
+    public boolean setDebug(boolean debug) {
+        this.debug = debug;
+        return debug;
     }
 
 }

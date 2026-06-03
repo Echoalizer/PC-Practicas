@@ -4,16 +4,20 @@ import java.io.Serializable;
 
 public class PreparadoSC extends Mensaje {
 
-    private final String address;
+    private final Content contenido;
 
-    public PreparadoSC(String sender, String receiver, String address) {
+//    private final String address;
+
+    public PreparadoSC(String sender, String receiver, String address, String id) {
         super(TipoMensaje.PREPARADO_SC, sender, receiver);
-        this.address = address;
+        this.contenido = new Content(address, id);
+//        this.address = address;
+
     }
 
     @Override
     public Serializable getContent() {
-        return this.address;
+        return this.contenido;
     }
 
 }

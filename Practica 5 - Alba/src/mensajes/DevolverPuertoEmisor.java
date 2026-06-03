@@ -2,10 +2,10 @@ package mensajes;
 
 import java.io.Serializable;
 
-public class DesconexionCC extends Mensaje {
+public class DevolverPuertoEmisor extends Mensaje {
 
-    public DesconexionCC(String sender, String receiver) {
-        super(TipoMensaje.DESCONEXION_CC, sender, receiver);
+    public DevolverPuertoEmisor(String sender, String receiver) {
+        super(TipoMensaje.DEVOLVER_PUERTO_EMISOR, sender, receiver);
     }
 
     @Override

@@ -14,26 +14,25 @@ public class ControllerSem implements ProducerConsumerController {
     }
 
     @Override
-    public void acquireProd() throws InterruptedException {
+    public void acquireProd(int id) throws InterruptedException {
         empty.acquire();
         mutexP.acquire();
     }
 
     @Override
-    public void releaseProd() {
+    public void releaseProd(int id) {
         mutexP.release();
         full.release();
     }
 
     @Override
-    public void acquireCons() throws InterruptedException {
-        if (full.hasQueuedThreads()) System.out.println("esperandoooo");
+    public void acquireCons(int id) throws InterruptedException {
         full.acquire();
         mutexC.acquire();
     }
 
     @Override
-    public void releaseCons() {
+    public void releaseCons(int id) {
         mutexC.release();
         empty.release();
     }
